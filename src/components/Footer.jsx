@@ -13,7 +13,7 @@ const Footer = () => {
                         <img
                             src="/images/ayodhya_logo.png"
                             alt="Ayodhya Agarbatti"
-                            className="w-full h-auto filter invert hue-rotate-180 brightness-200 saturate-200 contrast-125 mix-blend-lighten"
+                            className="w-full h-auto filter invert hue-rotate-180 brightness-110 contrast-200 saturate-200 mix-blend-screen"
                         />
                     </Link>
                     <p className="text-gray-400 text-sm leading-relaxed mb-8">

@@ -41,7 +41,7 @@ const Checkout = ({ cartItems, onClearCart }) => {
                     currency: "INR",
                     name: "Ayodhya Agarbatti",
                     description: "Sacred Fragrances",
-                    image: "/images/logo.png",
+                    image: "/images/ayodhya_logo.png",
                     handler: async function (response) {
                         try {
                             const newOrder = {

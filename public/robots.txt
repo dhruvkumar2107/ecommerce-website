@@ -20,4 +20,4 @@ User-agent: Google-Extended
 Allow: /
 
 # Sitemap Location
-Sitemap: https://ayodhyaagarbatti.com/sitemap.xml
+Sitemap: https://www.ayodhyaagarbatti.in/sitemap.xml

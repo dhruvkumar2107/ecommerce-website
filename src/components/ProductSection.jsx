@@ -133,8 +133,15 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                                 <img
                                     src={product.images[0]}
                                     alt={product.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                    className={`w-full h-full object-cover transition-all duration-700 ease-out ${product.images[1] ? 'group-hover:opacity-0' : 'group-hover:scale-105'}`}
                                 />
+                                {product.images[1] && (
+                                    <img
+                                        src={product.images[1]}
+                                        alt={`${product.name} lifestyle`}
+                                        className="w-full h-full object-cover absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out scale-105 pointer-events-none"
+                                    />
+                                )}
 
                                 {/* Burn time pill */}
                                 <div className="absolute bottom-3 left-4 right-4 z-10 flex justify-between items-center bg-charcoal/80 backdrop-blur-md text-ivory px-4 py-2 rounded-lg text-[10px] font-semibold tracking-wider">

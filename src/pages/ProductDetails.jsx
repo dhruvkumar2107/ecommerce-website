@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     ArrowLeft, Star, ShieldCheck, Truck, RotateCcw, Flame, Sparkles, 
-    Check, ShoppingBag, Info, Heart, Share2, HelpCircle, UserCheck 
+    Check, ShoppingBag, Info, Heart, Share2, HelpCircle, UserCheck,
+    ChevronLeft, ChevronRight 
 } from 'lucide-react';
 import { products } from '../data/products';
 
@@ -93,42 +94,111 @@ const ProductDetails = ({ addToCart }) => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
 
-                    {/* Left Column: Image Gallery (5 cols) */}
+                    {/* Left Column: Image Gallery with Sliding Photos (6 cols) */}
                     <div className="lg:col-span-6 space-y-4">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="relative h-[480px] md:h-[580px] rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-xl"
-                        >
-                            <img
-                                src={product.images[selectedImage] || product.images[0]}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-4 left-4 flex flex-col gap-2">
-                                <span className="bg-charcoal text-gold px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest">
+                        <div className="relative h-[480px] md:h-[580px] rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-xl group">
+                            <AnimatePresence mode="wait">
+                                <motion.img
+                                    key={selectedImage}
+                                    initial={{ opacity: 0, scale: 0.96 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.96 }}
+                                    transition={{ duration: 0.3 }}
+                                    src={product.images[selectedImage] || product.images[0]}
+                                    alt={product.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            </AnimatePresence>
+
+                            {/* Badges */}
+                            <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                                <span className="bg-charcoal text-gold px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest shadow">
                                     {product.badge}
                                 </span>
                                 {product.discount && (
-                                    <span className="bg-gold text-charcoal px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest">
+                                    <span className="bg-gold text-charcoal px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest shadow">
                                         {product.discount}
                                     </span>
                                 )}
                             </div>
-                        </motion.div>
 
-                        {/* Thumbnails */}
+                            {/* Slider Controls (Previous / Next Arrows) */}
+                            {product.images.length > 1 && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setSelectedImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+                                        }}
+                                        aria-label="Previous photo"
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/90 hover:bg-gold hover:text-white backdrop-blur-md flex items-center justify-center text-charcoal transition-all shadow-lg border border-gray-200"
+                                    >
+                                        <ChevronLeft size={22} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setSelectedImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+                                        }}
+                                        aria-label="Next photo"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/90 hover:bg-gold hover:text-white backdrop-blur-md flex items-center justify-center text-charcoal transition-all shadow-lg border border-gray-200"
+                                    >
+                                        <ChevronRight size={22} />
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Slide Dots Indicator */}
+                            {product.images.length > 1 && (
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+                                    {product.images.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setSelectedImage(idx);
+                                            }}
+                                            className={`h-2.5 rounded-full transition-all ${
+                                                selectedImage === idx ? 'w-8 bg-gold' : 'w-2.5 bg-white/70 hover:bg-white'
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Sliding Thumbnails */}
                         {product.images.length > 1 && (
-                            <div className="flex gap-4 overflow-x-auto pb-2">
+                            <div className="grid grid-cols-2 gap-4">
                                 {product.images.map((img, idx) => (
                                     <button
                                         key={idx}
-                                        onClick={() => setSelectedImage(idx)}
-                                        className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white ${
-                                            selectedImage === idx ? 'border-gold scale-105 shadow-md' : 'border-gray-200 opacity-60 hover:opacity-100'
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setSelectedImage(idx);
+                                        }}
+                                        className={`p-3 rounded-xl border-2 transition-all bg-white flex items-center gap-3 ${
+                                            selectedImage === idx ? 'border-gold shadow-md' : 'border-gray-200 opacity-70 hover:opacity-100'
                                         }`}
                                     >
-                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                        <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-50 border border-gray-100">
+                                            <img src={img} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-gold block">
+                                                {idx === 0 ? 'Photo 1 (Packet)' : 'Photo 2 (Blend)'}
+                                            </span>
+                                            <span className="text-xs font-semibold text-charcoal">
+                                                {idx === 0 ? 'Incense Pack' : 'Botanical Scene'}
+                                            </span>
+                                        </div>
                                     </button>
                                 ))}
                             </div>
@@ -193,7 +263,11 @@ const ProductDetails = ({ addToCart }) => {
                                     {product.packOptions.map((pack, idx) => (
                                         <button
                                             key={idx}
-                                            onClick={() => setSelectedPack(idx)}
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setSelectedPack(idx);
+                                            }}
                                             className={`p-4 rounded-xl text-left border-2 transition-all flex flex-col justify-between ${
                                                 selectedPack === idx
                                                     ? 'border-gold bg-gold/10 shadow-md'
@@ -219,6 +293,7 @@ const ProductDetails = ({ addToCart }) => {
                         <div className="flex flex-col sm:flex-row gap-4 pt-2">
                             <div className="flex items-center border-2 border-gray-200 rounded-xl bg-white p-1 shrink-0 w-fit">
                                 <button
+                                    type="button"
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                     className="w-10 h-10 flex items-center justify-center font-bold text-lg text-gray-600 hover:bg-gray-100 rounded-lg"
                                 >
@@ -226,6 +301,7 @@ const ProductDetails = ({ addToCart }) => {
                                 </button>
                                 <span className="w-12 text-center font-mono font-bold text-lg">{quantity}</span>
                                 <button
+                                    type="button"
                                     onClick={() => setQuantity(quantity + 1)}
                                     className="w-10 h-10 flex items-center justify-center font-bold text-lg text-gray-600 hover:bg-gray-100 rounded-lg"
                                 >
@@ -234,6 +310,7 @@ const ProductDetails = ({ addToCart }) => {
                             </div>
 
                             <button
+                                type="button"
                                 onClick={handleAddToCart}
                                 className="flex-1 bg-charcoal text-white hover:bg-gold hover:text-charcoal transition-all py-4 px-8 rounded-xl font-bold uppercase tracking-widest text-xs shadow-xl flex items-center justify-center gap-3 transform active:scale-98"
                             >
@@ -285,7 +362,12 @@ const ProductDetails = ({ addToCart }) => {
                         ].map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setActiveTab(tab.id);
+                                }}
                                 className={`px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
                                     activeTab === tab.id
                                         ? 'bg-charcoal text-gold shadow-md'

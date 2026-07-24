@@ -1,210 +1,276 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { Star, ShoppingBag, Eye, Sparkles, Filter, CheckCircle, ShieldCheck, Flame } from 'lucide-react';
+import { products, categories } from '../data/products';
 
-const products = [
-    {
-        id: 1,
-        name: "Espresso Ground",
-        variant: "Premium Coffee",
-        price: "₹450",
-        benefits: "Focus • Energy • Alertness",
-        desc: "Stimulate your mind with the robust aroma of roasted coffee beans. Perfect for deep work and morning rituals.",
-        badge: "Best for Productivity",
-        image: "/images/product_coffee.jpg",
-        deepContent: {
-            origin: "Ethiopian Highlands (Sidamo)",
-            mood: "Intellectual Awakening",
-            chakra: "Root (Muladhara) - Grounding",
-            story: "Sourced from the high-altitude plantations of Sidamo, these beans are sun-dried to preserve their volatile oils. The aroma is not just 'coffee'—it is the scent of earth, fire, and awakening. Used by monks to sustain focus during long meditations.",
-            pyramid: { top: "Roasted Arabica", heart: "Dark Cocoa & Nutmeg", base: "Vetiver" }
-        }
-    },
-    {
-        id: 2,
-        name: "Madagascan Calm",
-        variant: "French Vanilla",
-        price: "₹450",
-        benefits: "Relaxation • Sleep • Comfort",
-        desc: "A warm, soothing embrace of sweet vanilla. Melts away anxiety and prepares the soul for restful sleep.",
-        badge: "Best for Relaxation",
-        image: "/images/product_vanilla_group.jpg",
-        deepContent: {
-            origin: "Sava Region, Madagascar",
-            mood: "Deep Comfort & Safety",
-            chakra: "Sacral (Swadhisthana) - Pleasure",
-            story: "True Vanilla is an orchid fruit, requiring painstaking hand-pollination. Our extract comes from the Sava region, known for the highest vanillin content. This fragrance triggers the brain's safety response, instantly lowering cortisol levels.",
-            pyramid: { top: "Sweet Cream", heart: "Floral Orchid", base: "Warm Musk & Tonka" }
-        }
-    },
-    {
-        id: 3,
-        name: "Citrus Clarity",
-        variant: "Zest Lemon",
-        price: "₹380",
-        benefits: "Purification • Clarity • Uplift",
-        desc: "Sharp and refreshing, lemon disperses negative energy and cuts through mental fog. Instantly revitalizing.",
-        image: "/images/product_lemon.jpg",
-        deepContent: {
-            origin: "Amalfi Coast, Italy",
-            mood: "Spiritual Cleansing",
-            chakra: "Solar Plexus (Manipura) - Willpower",
-            story: "Lemon has been used in purification rituals for millennia. Our oil is cold-pressed from the zest to capture the 'limonene' terpene, proven to elevate serotonin. It cuts through stagnant energy in a room like a knife of light.",
-            pyramid: { top: "Sparkling Zest", heart: "Lemongrass & Verbena", base: "Clean Cedar" }
-        }
-    },
-    {
-        id: 4,
-        name: "Creative Spark",
-        variant: "Wild Orange",
-        price: "₹380",
-        benefits: "Joy • Creativity • Flow",
-        desc: "Sweet and vibrant orange notes that awaken the sacral chakra, sparking creativity and unbridled joy.",
-        badge: "Best for Artists",
-        image: "/images/product_orange.jpg",
-        deepContent: {
-            origin: "Nagpur, India",
-            mood: "Unbridled Joy",
-            chakra: "Sacral (Swadhisthana) - Creativity",
-            story: "The 'Golden Apple' of ancient myths. Wild Orange connects us to the inner child. It dissolves rigidity and perfectionism, allowing creative energy to flow freely. Ideal for studios, writing rooms, and new beginnings.",
-            pyramid: { top: "Sweet Mandarin", heart: "Neroli Blossom", base: "Sacral Spice" }
-        }
-    }
-];
+const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
+    const [selectedCategory, setSelectedCategory] = useState("All Incense");
+    const [sortBy, setSortBy] = useState("featured");
+    const [quickViewProduct, setQuickViewProduct] = useState(null);
+    const [addedToast, setAddedToast] = useState(null);
 
-const ProductSection = ({ addToCart }) => {
-    const [activeProduct, setActiveProduct] = React.useState(null);
+    const handleAddToCart = (product, e) => {
+        if (e) e.stopPropagation();
+        addToCart(product);
+        setAddedToast(product.name);
+        setTimeout(() => setAddedToast(null), 2500);
+    };
 
-    // Extended Product Data with Notes
-    const luxuryProducts = products.map(p => ({
-        ...p,
-        notes: p.deepContent ? p.deepContent.pyramid : (p.name.includes("Coffee") ? { top: "Roasted Bean", heart: "Dark Cocoa", base: "Vanilla" } :
-            p.name.includes("Vanilla") ? { top: "Sweet Cream", heart: "Madagascan Pod", base: "Warm Musk" } :
-                p.name.includes("Lemon") ? { top: "Zesty Peel", heart: "Lemongrass", base: "Clean Air" } :
-                    { top: "Wild Orange", heart: "Neroli", base: "Sacral Spice" })
-    }));
+    // Filtering & Sorting
+    const filteredProducts = products.filter(product => {
+        if (selectedCategory === "All Incense") return true;
+        return product.category === selectedCategory;
+    }).sort((a, b) => {
+        if (sortBy === "price-low") return a.numericPrice - b.numericPrice;
+        if (sortBy === "price-high") return b.numericPrice - a.numericPrice;
+        if (sortBy === "rating") return b.rating - a.rating;
+        return a.id - b.id;
+    });
 
     return (
-        <section className="py-32 bg-transparent overflow-hidden relative">
-            <div className="container mx-auto px-6 mb-16 flex flex-col md:flex-row justify-between items-end gap-6 text-ivory">
-                <div>
-                    <span className="font-heading text-xs font-bold tracking-[0.3em] opacity-60 text-gold uppercase mb-4 block">The Collection</span>
-                    <h2 className="font-serif text-4xl md:text-5xl leading-tight">Curated for <br /><span className="italic opacity-70">Your Inner State</span></h2>
-                </div>
-                <div className="hidden md:block text-xs uppercase tracking-widest opacity-40">Drag to Explore →</div>
-            </div>
-
-            {/* Horizontal Scroll Container */}
-            <div className="flex overflow-x-auto gap-8 px-6 pb-20 snap-x snap-mandatory scrollbar-hide cursor-grab active:cursor-grabbing" data-cursor="drag">
-                {luxuryProducts.map((product) => (
+        <section className={`py-24 relative overflow-hidden ${isStandaloneShop ? 'bg-ivory text-charcoal pt-36' : 'bg-transparent text-ivory'}`}>
+            {/* Added to Cart Toast Notification */}
+            <AnimatePresence>
+                {addedToast && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        key={product.id}
-                        className="min-w-[320px] md:min-w-[400px] snap-center group cursor-pointer relative"
+                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                        className="fixed bottom-8 right-8 z-[120] bg-charcoal text-ivory border border-gold px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3"
                     >
-                        {/* Image Area - Taller & Slimmer */}
-                        <div className="relative h-[550px] overflow-hidden bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg">
-                            {/* Minimal Badge */}
-                            <div className="absolute top-6 left-6 z-20 bg-white/90 backdrop-blur-md px-4 py-2 text-[9px] font-bold tracking-[0.2em] uppercase text-charcoal">
-                                {product.badge || "Signature"}
-                            </div>
-
-                            <img
-                                src={product.image}
-                                alt={product.name}
-                                className="w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 grayscale-[10%] drop-shadow-xl"
-                            />
-
-                            {/* Hover Overlay - Minimal */}
-                            <div className="absolute inset-0 bg-ivory/90 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8 text-charcoal">
-                                <p className="font-serif text-xl italic mb-4 leading-relaxed opacity-90">"{product.desc}"</p>
-                                <div className="flex flex-col gap-3">
-                                    <button
-                                        onClick={() => addToCart(product)}
-                                        className="bg-charcoal text-white px-8 py-4 uppercase tracking-[0.2em] text-xs font-bold hover:bg-gold hover:text-white transition-colors w-full"
-                                    >
-                                        Quick Add — {product.price}
-                                    </button>
-                                    <Link
-                                        to={`/product/${product.id}`}
-                                        className="bg-transparent border border-charcoal/20 text-charcoal px-8 py-4 uppercase tracking-[0.2em] text-xs font-bold hover:border-gold hover:text-gold transition-colors w-full backdrop-blur-sm block text-center"
-                                    >
-                                        Discover Ritual
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Info Area - Clean & Structured */}
-                        <div className="pt-8 pr-8">
-                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold/60 mb-2">{product.variant}</h4>
-                            <h3 className="font-serif text-3xl text-ivory mb-4">{product.name}</h3>
-
-                            {/* Fragrance Notes Grid */}
-                            <div className="grid grid-cols-3 gap-2 border-t border-white/10 pt-4 mt-4">
-                                <div>
-                                    <span className="block text-[9px] uppercase tracking-widest text-gray-500 mb-1">Top</span>
-                                    <span className="block text-xs font-medium text-ivory/80">{product.notes.top}</span>
-                                </div>
-                                <div>
-                                    <span className="block text-[9px] uppercase tracking-widest text-gray-500 mb-1">Heart</span>
-                                    <span className="block text-xs font-medium text-ivory/80">{product.notes.heart}</span>
-                                </div>
-                                <div>
-                                    <span className="block text-[9px] uppercase tracking-widest text-gray-500 mb-1">Base</span>
-                                    <span className="block text-xs font-medium text-ivory/80">{product.notes.base}</span>
-                                </div>
-                            </div>
+                        <CheckCircle className="text-gold w-6 h-6" />
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wider text-gold">Added to Sanctuary Bag</p>
+                            <p className="text-sm font-serif">{addedToast}</p>
                         </div>
                     </motion.div>
-                ))}
+                )}
+            </AnimatePresence>
+
+            <div className="container mx-auto px-6">
+                {/* Section Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+                    <div>
+                        <span className="font-heading text-xs font-bold tracking-[0.3em] text-gold uppercase mb-3 block flex items-center gap-2">
+                            <Sparkles size={14} /> The Royal Collection
+                        </span>
+                        <h2 className={`font-serif text-4xl md:text-6xl leading-tight ${isStandaloneShop ? 'text-charcoal' : 'text-ivory'}`}>
+                            Sacred Fragrances <br />
+                            <span className="italic font-light opacity-80">Hand-Rolled in Ayodhya</span>
+                        </h2>
+                    </div>
+
+                    {/* Filter & Sort Controls */}
+                    <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-white/20">
+                            <Filter size={14} className="text-gold" />
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="bg-transparent text-xs uppercase tracking-wider font-bold text-charcoal outline-none cursor-pointer"
+                            >
+                                <option value="featured" className="bg-charcoal text-white">Featured</option>
+                                <option value="price-low" className="bg-charcoal text-white">Price: Low to High</option>
+                                <option value="price-high" className="bg-charcoal text-white">Price: High to Low</option>
+                                <option value="rating" className="bg-charcoal text-white">Highest Rated</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Category Pills */}
+                <div className="flex items-center gap-3 overflow-x-auto pb-6 mb-10 scrollbar-hide">
+                    {categories.map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setSelectedCategory(cat)}
+                            className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap border ${
+                                selectedCategory === cat
+                                    ? 'bg-gold text-charcoal border-gold shadow-lg shadow-gold/20 scale-105'
+                                    : 'bg-white/5 text-gray-400 border-white/10 hover:border-gold/50 hover:text-gold'
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Product Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredProducts.map((product) => (
+                        <motion.div
+                            key={product.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5 }}
+                            className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-2xl hover:border-gold/40 transition-all duration-500 flex flex-col group text-charcoal"
+                        >
+                            {/* Image Container */}
+                            <div className="relative h-[340px] overflow-hidden bg-gray-50">
+                                {/* Badges */}
+                                <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                                    <span className="bg-charcoal/90 text-gold backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full shadow">
+                                        {product.badge}
+                                    </span>
+                                    {product.discount && (
+                                        <span className="bg-gold text-charcoal px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full shadow">
+                                            {product.discount}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Quick View Button Overlay */}
+                                <button
+                                    onClick={() => setQuickViewProduct(product)}
+                                    aria-label={`Quick view ${product.name}`}
+                                    className="absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-charcoal hover:bg-gold hover:text-white transition-all opacity-0 group-hover:opacity-100 shadow"
+                                >
+                                    <Eye size={18} />
+                                </button>
+
+                                <img
+                                    src={product.images[0]}
+                                    alt={product.name}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                />
+
+                                {/* Burn time pill */}
+                                <div className="absolute bottom-3 left-4 right-4 z-10 flex justify-between items-center bg-charcoal/80 backdrop-blur-md text-ivory px-4 py-2 rounded-lg text-[10px] font-semibold tracking-wider">
+                                    <span className="flex items-center gap-1"><Flame size={12} className="text-gold" /> {product.burnTime}</span>
+                                    <span>{product.stickCount.split('+')[0]}</span>
+                                </div>
+                            </div>
+
+                            {/* Info Container */}
+                            <div className="p-6 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-0.5 rounded">
+                                            {product.category}
+                                        </span>
+                                        <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
+                                            <Star size={14} className="fill-current" />
+                                            <span>{product.rating}</span>
+                                            <span className="text-gray-400 font-normal text-[10px]">({product.reviewCount})</span>
+                                        </div>
+                                    </div>
+
+                                    <h3 className="font-serif text-2xl font-semibold mb-1 hover:text-gold transition-colors">
+                                        <Link to={`/product/${product.id}`}>{product.name}</Link>
+                                    </h3>
+                                    <p className="text-xs text-gray-500 mb-4">{product.variant}</p>
+
+                                    <p className="text-xs text-gray-600 leading-relaxed mb-4 line-clamp-2">
+                                        {product.shortDesc}
+                                    </p>
+
+                                    {/* Pyramid summary */}
+                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-[11px] mb-4 space-y-1">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-400 font-bold uppercase text-[9px]">Top Note:</span>
+                                            <span className="font-medium text-gray-700 truncate max-w-[180px]">{product.pyramid.top}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-400 font-bold uppercase text-[9px]">Base Note:</span>
+                                            <span className="font-medium text-gray-700 truncate max-w-[180px]">{product.pyramid.base}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Price and Actions */}
+                                <div>
+                                    <div className="flex items-baseline gap-2 mb-4">
+                                        <span className="font-serif text-2xl font-bold text-charcoal">{product.price}</span>
+                                        <span className="text-sm text-gray-400 line-through">{product.originalPrice}</span>
+                                        <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">Tax Included</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            onClick={(e) => handleAddToCart(product, e)}
+                                            className="bg-charcoal text-white hover:bg-gold hover:text-charcoal font-bold uppercase tracking-widest text-[11px] py-3.5 px-4 rounded-lg transition-all shadow-md flex items-center justify-center gap-2"
+                                        >
+                                            <ShoppingBag size={14} /> Quick Add
+                                        </button>
+                                        <Link
+                                            to={`/product/${product.id}`}
+                                            className="border border-charcoal/20 text-charcoal hover:border-gold hover:text-gold font-bold uppercase tracking-widest text-[11px] py-3.5 px-4 rounded-lg transition-all text-center block"
+                                        >
+                                            View Ritual
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
 
-            {/* Editorial Modal */}
-            {activeProduct && activeProduct.deepContent && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-ivory/95 backdrop-blur-lg" onClick={() => setActiveProduct(null)}></div>
+            {/* Quick View Modal */}
+            {quickViewProduct && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-charcoal/80 backdrop-blur-md">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="relative bg-ivory text-charcoal w-full max-w-5xl h-[80vh] overflow-y-auto rounded-none shadow-2xl flex flex-col md:flex-row"
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="relative bg-white text-charcoal w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] overflow-y-auto"
                     >
-                        {/* Image Side */}
-                        <div className="w-full md:w-1/2 h-64 md:h-full relative">
-                            <img src={activeProduct.image} className="w-full h-full object-cover" alt="" />
-                            <div className="absolute inset-0 bg-charcoal/5"></div>
+                        <button
+                            onClick={() => setQuickViewProduct(null)}
+                            className="absolute top-4 right-4 z-30 w-8 h-8 rounded-full bg-gray-100 hover:bg-gold hover:text-white flex items-center justify-center font-bold transition-colors"
+                        >
+                            ✕
+                        </button>
+
+                        <div className="w-full md:w-1/2 h-72 md:h-auto relative bg-gray-100">
+                            <img src={quickViewProduct.images[0]} alt={quickViewProduct.name} className="w-full h-full object-cover" />
                         </div>
 
-                        {/* Content Side */}
-                        <div className="w-full md:w-1/2 p-12 md:p-16 flex flex-col justify-center">
-                            <button onClick={() => setActiveProduct(null)} className="absolute top-8 right-8 text-xs uppercase tracking-widest hover:text-gold">Close</button>
+                        <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-between">
+                            <div>
+                                <span className="text-xs font-bold uppercase tracking-widest text-gold bg-gold/10 px-3 py-1 rounded-full inline-block mb-3">
+                                    {quickViewProduct.category}
+                                </span>
+                                <h2 className="font-serif text-3xl md:text-4xl font-bold mb-2">{quickViewProduct.name}</h2>
+                                <p className="text-sm text-gray-500 mb-4">{quickViewProduct.variant}</p>
+                                <p className="font-serif text-2xl font-bold text-charcoal mb-4">
+                                    {quickViewProduct.price} <span className="text-sm text-gray-400 line-through font-normal">{quickViewProduct.originalPrice}</span>
+                                </p>
 
-                            <span className="font-heading text-xs uppercase tracking-[0.4em] text-gold mb-4 block">{activeProduct.deepContent.origin}</span>
-                            <h2 className="font-serif text-4xl md:text-5xl mb-8 leading-tight">{activeProduct.name}</h2>
+                                <p className="text-sm text-gray-600 leading-relaxed mb-6 border-l-2 border-gold pl-4 italic">
+                                    "{quickViewProduct.story}"
+                                </p>
 
-                            <p className="font-body text-lg text-gray-600 leading-relaxed mb-12 border-l-2 border-gold pl-6">
-                                {activeProduct.deepContent.story}
-                            </p>
-
-                            <div className="grid grid-cols-2 gap-8 mb-12">
-                                <div>
-                                    <h4 className="font-heading text-[10px] uppercase tracking-widest text-gray-400 mb-2">Mood</h4>
-                                    <p className="font-serif text-xl italic">{activeProduct.deepContent.mood}</p>
-                                </div>
-                                <div>
-                                    <h4 className="font-heading text-[10px] uppercase tracking-widest text-gray-400 mb-2">Chakra</h4>
-                                    <p className="font-serif text-xl italic">{activeProduct.deepContent.chakra}</p>
+                                <div className="space-y-2 mb-6">
+                                    <div className="text-xs font-bold uppercase tracking-wider text-gray-400">Fragrance Pyramid</div>
+                                    <div className="grid grid-cols-3 gap-2 text-xs bg-gray-50 p-3 rounded-lg">
+                                        <div><span className="text-[9px] block text-gray-400">TOP</span> {quickViewProduct.pyramid.top}</div>
+                                        <div><span className="text-[9px] block text-gray-400">HEART</span> {quickViewProduct.pyramid.heart}</div>
+                                        <div><span className="text-[9px] block text-gray-400">BASE</span> {quickViewProduct.pyramid.base}</div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => { addToCart(activeProduct); setActiveProduct(null); }}
-                                className="bg-charcoal text-white px-10 py-5 uppercase tracking-[0.2em] text-xs font-bold hover:bg-gold transition-colors w-full"
-                            >
-                                Add to Ritual — {activeProduct.price}
-                            </button>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => {
+                                        addToCart(quickViewProduct);
+                                        setQuickViewProduct(null);
+                                    }}
+                                    className="flex-1 bg-charcoal text-white hover:bg-gold hover:text-charcoal py-4 font-bold uppercase tracking-widest text-xs rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <ShoppingBag size={16} /> Add to Sanctuary — {quickViewProduct.price}
+                                </button>
+                                <Link
+                                    to={`/product/${quickViewProduct.id}`}
+                                    onClick={() => setQuickViewProduct(null)}
+                                    className="bg-gray-100 text-charcoal hover:bg-gray-200 py-4 px-6 font-bold uppercase tracking-widest text-xs rounded-lg transition-colors text-center"
+                                >
+                                    Full Details
+                                </Link>
+                            </div>
                         </div>
                     </motion.div>
                 </div>

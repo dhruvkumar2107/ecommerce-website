@@ -1,0 +1,23 @@
+# User-agent directives for Ayodhya Agarbatti
+User-agent: *
+Allow: /
+Disallow: /admin
+
+# Allow AI Generative Engines (GEO & AEO indexing)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Sitemap Location
+Sitemap: https://ayodhyaagarbatti.com/sitemap.xml

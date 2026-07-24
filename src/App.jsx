@@ -11,6 +11,7 @@ import LenisScroll from './components/LenisScroll';
 import CustomCursor from './components/CustomCursor';
 import PaymentSuccess from './components/PaymentSuccess';
 import Preloader from './components/Preloader';
+import SearchModal from './components/SearchModal';
 
 // Pages
 import Home from './pages/Home';
@@ -22,14 +23,17 @@ import Checkout from './pages/Checkout';
 import NotFound from './pages/NotFound';
 
 const TopBar = () => (
-    <div className="bg-charcoal text-ivory text-[10px] font-bold tracking-[0.2em] text-center py-2 uppercase border-b border-white/10">
-        Complimentary shipping on orders over ₹999
+    <div className="bg-charcoal text-ivory text-[10px] font-bold tracking-[0.2em] text-center py-2.5 uppercase border-b border-white/10 flex items-center justify-center gap-4">
+        <span>✨ Hand-Rolled in Ayodhya • 100% Charcoal-Free</span>
+        <span className="hidden md:inline">•</span>
+        <span className="hidden md:inline text-gold">Complimentary Shipping on Orders Over ₹999</span>
     </div>
 );
 
 function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     // Initialize from LocalStorage
     const [cartItems, setCartItems] = useState(() => {
@@ -41,7 +45,7 @@ function App() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsLoading(false);
-        }, 2000);
+        }, 1500);
         return () => clearTimeout(timer);
     }, []);
 
@@ -57,10 +61,10 @@ function App() {
             const existing = prev.find(item => item.id === product.id);
             if (existing) {
                 return prev.map(item =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                    item.id === product.id ? { ...item, quantity: item.quantity + (product.quantity || 1) } : item
                 );
             }
-            return [...prev, { ...product, quantity: 1 }];
+            return [...prev, { ...product, quantity: product.quantity || 1 }];
         });
         setIsCartOpen(true);
     };
@@ -92,12 +96,16 @@ function App() {
                     <CustomCursor />
                     <div className="noise-overlay"></div>
                     <TopBar />
-                    <Navbar cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)} onCartClick={toggleCart} />
+                    <Navbar
+                        cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+                        onCartClick={toggleCart}
+                        onSearchClick={() => setIsSearchOpen(true)}
+                    />
 
                     <main className="flex-grow">
                         <Routes>
                             <Route path="/" element={<Home addToCart={addToCart} />} />
-                            <Route path="/shop" element={<ProductSection addToCart={addToCart} />} />
+                            <Route path="/shop" element={<ProductSection addToCart={addToCart} isStandaloneShop={true} />} />
                             <Route path="/blog" element={<Blog />} />
                             <Route path="/contact" element={<Contact />} />
                             <Route path="/checkout" element={<Checkout cartItems={cartItems} onClearCart={clearCart} />} />
@@ -110,6 +118,7 @@ function App() {
 
                     <Footer />
 
+                    {/* Cart Drawer */}
                     <AnimatePresence>
                         {isCartOpen && (
                             <Cart
@@ -121,6 +130,13 @@ function App() {
                             />
                         )}
                     </AnimatePresence>
+
+                    {/* Search Modal */}
+                    <SearchModal
+                        isOpen={isSearchOpen}
+                        onClose={() => setIsSearchOpen(false)}
+                        addToCart={addToCart}
+                    />
                 </div>
             </LenisScroll>
         </Router>

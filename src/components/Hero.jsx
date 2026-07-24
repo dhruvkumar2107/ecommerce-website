@@ -14,14 +14,13 @@ const Hero = () => {
                 transition={{ duration: 2.5, ease: "easeOut" }}
                 style={{
                     y: y1,
-                    // Warm, sacred, royal abstract background (Red/Gold/Black mix)
-                    backgroundImage: "url('https://images.unsplash.com/photo-1605218427368-35b0l9i50361?q=80&w=2600&auto=format&fit=crop')",
+                    backgroundImage: "url('/images/ritual_bg.png')",
                 }}
-                className="absolute inset-0 z-0 bg-cover bg-center opacity-70"
+                className="absolute inset-0 z-0 bg-cover bg-center opacity-60"
             >
                 {/* Gradient Overlays for integration */}
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/20 to-charcoal/80"></div>
-                <div className="absolute inset-0 bg-black/20 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-charcoal/80"></div>
+                <div className="absolute inset-0 bg-black/30 mix-blend-overlay"></div>
             </motion.div>
 
             {/* Content Overlay */}

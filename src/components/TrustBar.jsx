@@ -64,11 +64,11 @@ const TrustBar = () => {
                             variants={itemVariants}
                             className="flex flex-col items-center text-center group cursor-default"
                         >
-                            <div className="mb-6 text-gold p-5 rounded-full border border-charcoal/5 bg-gray-50 group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-all duration-500 shadow-sm group-hover:shadow-lg">
+                            <div className="mb-6 text-gold p-5 rounded-full border border-charcoal/10 bg-gray-50 group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-all duration-500 shadow-sm group-hover:shadow-lg">
                                 {React.cloneElement(feature.icon, { size: 28 })}
                             </div>
-                            <h3 className="font-heading text-lg mb-2 text-ivory tracking-wide">{feature.title}</h3>
-                            <p className="font-body text-xs text-gray-400 uppercase tracking-widest group-hover:text-gold/80 transition-colors">{feature.desc}</p>
+                            <h3 className="font-heading text-lg mb-2 text-charcoal font-semibold tracking-wide">{feature.title}</h3>
+                            <p className="font-body text-xs text-gray-500 uppercase tracking-widest group-hover:text-gold transition-colors">{feature.desc}</p>
                         </motion.div>
                     ))}
                 </motion.div>

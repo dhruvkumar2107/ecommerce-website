@@ -28,12 +28,16 @@ const Navbar = ({ cartCount, onCartClick }) => {
             {scrolled && <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>}
 
             <div className="container mx-auto px-6 flex justify-between items-center relative z-10">
-                {/* Logo - Vivid Orange & Transparent via Screen Blend */}
+                {/* Logo - Vivid Orange & Transparent via Screen Blend with Custom Filter Order */}
                 <Link to="/" className="block w-24 md:w-36">
                     <img
                         src="/images/ayodhya_logo.png"
                         alt="Ayodhya Agarbatti"
-                        className="w-full h-auto filter invert hue-rotate-180 brightness-150 saturate-200 mix-blend-screen block"
+                        className="w-full h-auto block"
+                        style={{
+                            filter: 'contrast(200%) invert(1) hue-rotate(180deg) brightness(150%) saturate(200%)',
+                            mixBlendMode: 'screen'
+                        }}
                     />
                 </Link>
                 {/* Desktop Menu */}

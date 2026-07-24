@@ -13,7 +13,11 @@ const Footer = () => {
                         <img
                             src="/images/ayodhya_logo.png"
                             alt="Ayodhya Agarbatti"
-                            className="w-full h-auto filter invert hue-rotate-180 brightness-150 saturate-200 mix-blend-screen"
+                            className="w-full h-auto"
+                            style={{
+                                filter: 'contrast(200%) invert(1) hue-rotate(180deg) brightness(150%) saturate(200%)',
+                                mixBlendMode: 'screen'
+                            }}
                         />
                     </Link>
                     <p className="text-gray-400 text-sm leading-relaxed mb-8">

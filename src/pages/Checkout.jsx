@@ -1,17 +1,65 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShoppingBag, MapPin, Lock, CreditCard, Banknote, CheckCircle, ShieldCheck, Truck, Check } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// ... existing imports ...
+const Steps = ({ currentStep }) => {
+    const steps = [
+        { num: 1, label: 'Address' },
+        { num: 2, label: 'Review' },
+        { num: 3, label: 'Payment' }
+    ];
+    return (
+        <div className="flex items-center justify-center gap-4 md:gap-8 mb-12">
+            {steps.map((s, idx) => (
+                <div key={s.num} className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${currentStep >= s.num ? 'bg-gold text-charcoal' : 'bg-gray-200 text-gray-500'}`}>
+                        {currentStep > s.num ? <Check size={16} /> : s.num}
+                    </div>
+                    <span className={`text-sm font-medium ${currentStep >= s.num ? 'text-charcoal font-semibold' : 'text-gray-400'}`}>
+                        {s.label}
+                    </span>
+                    {idx < steps.length - 1 && (
+                        <div className={`h-0.5 w-8 md:w-16 ml-2 ${currentStep > s.num ? 'bg-gold' : 'bg-gray-200'}`} />
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+};
 
-const Checkout = ({ cartItems, onClearCart }) => {
+const Checkout = ({ cartItems = [], onClearCart }) => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [paymentMethod, setPaymentMethod] = useState('razorpay');
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // ... existing state ...
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        addres: '',
+        city: '',
+        pincode: '',
+        phone: '',
+        email: ''
+    });
 
-    // ... existing helper functions ...
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const nextStep = (e) => {
+        e.preventDefault();
+        setStep(2);
+    };
+
+    const total = cartItems.reduce((acc, item) => {
+        const priceNum = parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
+        return acc + priceNum * item.quantity;
+    }, 0);
 
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
@@ -274,9 +322,10 @@ const Checkout = ({ cartItems, onClearCart }) => {
 
                                     <button
                                         onClick={handlePlaceOrder}
-                                        className="w-full bg-gold text-charcoal py-5 rounded-lg font-bold uppercase tracking-widest hover:bg-charcoal hover:text-white transition-all shadow-lg flex items-center justify-center gap-2"
+                                        disabled={isProcessing}
+                                        className="w-full bg-gold text-charcoal py-5 rounded-lg font-bold uppercase tracking-widest hover:bg-charcoal hover:text-white transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
                                     >
-                                        <Lock size={16} /> Pay ₹{total} & Place Order
+                                        <Lock size={16} /> {isProcessing ? 'Processing Order...' : `Pay ₹${total} & Place Order`}
                                     </button>
                                     <div className="text-center mt-4 text-[10px] uppercase tracking-widest text-gray-400 flex items-center justify-center gap-2">
                                         <ShieldCheck size={14} /> SSL Secured • 256-Bit Encrypted

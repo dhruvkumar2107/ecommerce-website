@@ -2,7 +2,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "../firebase";
 
 // Initialize GA4 gtag script dynamically if measurement ID is present
-const GA_MEASUREMENT_ID = "G-JSEME84EMY";
+const GA_MEASUREMENT_ID = "G-K0D3Q6BJ2G";
 
 export const initGoogleAnalytics = () => {
     if (typeof window === "undefined") return;

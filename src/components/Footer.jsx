@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Linkedin, Check } from 'lucide-react';
+import { Instagram, Linkedin, Facebook, Youtube, Check } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -42,24 +42,46 @@ const Footer = () => {
                     <p className="text-gray-400 text-sm leading-relaxed mb-8">
                         Crafting 100% natural, charcoal-free sacred fragrances. Hand-rolled in the holy city of Ayodhya.
                     </p>
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-3">
                         <a
                             href="https://www.instagram.com/ayodhyaagarbatti/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            aria-label="Ayodhya Agarbatti Instagram"
-                            className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center hover:bg-gold hover:border-gold hover:text-charcoal transition-all text-gray-300"
+                            aria-label="Ayodhya Agarbatti Instagram (@ayodhyaagarbatti)"
+                            title="Instagram (@ayodhyaagarbatti)"
+                            className="w-9 h-9 border border-white/10 rounded-full flex items-center justify-center hover:bg-gold hover:border-gold hover:text-charcoal transition-all text-gray-300"
                         >
-                            <Instagram size={18} />
+                            <Instagram size={17} />
+                        </a>
+                        <a
+                            href="https://www.facebook.com/ayodhyaagarbatti"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Ayodhya Agarbatti Facebook"
+                            title="Facebook (Ayodhya Agarbatti)"
+                            className="w-9 h-9 border border-white/10 rounded-full flex items-center justify-center hover:bg-gold hover:border-gold hover:text-charcoal transition-all text-gray-300"
+                        >
+                            <Facebook size={17} />
                         </a>
                         <a
                             href="https://www.linkedin.com/in/ayodhya-agarbatti-122b22418/"
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Ayodhya Agarbatti LinkedIn"
-                            className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center hover:bg-gold hover:border-gold hover:text-charcoal transition-all text-gray-300"
+                            title="LinkedIn (Ayodhya Agarbatti)"
+                            className="w-9 h-9 border border-white/10 rounded-full flex items-center justify-center hover:bg-gold hover:border-gold hover:text-charcoal transition-all text-gray-300"
                         >
-                            <Linkedin size={18} />
+                            <Linkedin size={17} />
+                        </a>
+                        <a
+                            href="https://www.youtube.com/@ayodhyaagarbatti"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Ayodhya Agarbatti YouTube (@ayodhyaagarbatti)"
+                            title="YouTube (@ayodhyaagarbatti)"
+                            className="w-9 h-9 border border-white/10 rounded-full flex items-center justify-center hover:bg-gold hover:border-gold hover:text-charcoal transition-all text-gray-300"
+                        >
+                            <Youtube size={17} />
                         </a>
                     </div>
                 </div>

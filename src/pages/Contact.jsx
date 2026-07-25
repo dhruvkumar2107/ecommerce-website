@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, MapPin, Phone, CheckCircle, Send, Loader2 } from 'lucide-react';
+import { Mail, MapPin, Phone, CheckCircle, Send, Loader2, Instagram, Facebook, Linkedin, Youtube } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -95,6 +95,49 @@ const Contact = () => {
                             <div>
                                 <h3 className="font-heading text-xl mb-1 text-charcoal">Call Us</h3>
                                 <p className="text-gray-500">+91 98765 43210<br />Mon-Sat, 9am - 6pm IST</p>
+                            </div>
+                        </div>
+
+                        {/* Official Social Media Handles */}
+                        <div className="pt-4 border-t border-gray-100">
+                            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-charcoal mb-4">Official Social Channels</h3>
+                            <div className="flex items-center gap-3">
+                                <a
+                                    href="https://www.instagram.com/ayodhyaagarbatti/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Instagram (@ayodhyaagarbatti)"
+                                    className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-charcoal hover:bg-gold hover:text-white transition-all shadow-sm"
+                                >
+                                    <Instagram size={18} />
+                                </a>
+                                <a
+                                    href="https://www.facebook.com/ayodhyaagarbatti"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Facebook (Ayodhya Agarbatti)"
+                                    className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-charcoal hover:bg-gold hover:text-white transition-all shadow-sm"
+                                >
+                                    <Facebook size={18} />
+                                </a>
+                                <a
+                                    href="https://www.linkedin.com/in/ayodhya-agarbatti-122b22418/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="LinkedIn (Ayodhya Agarbatti)"
+                                    className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-charcoal hover:bg-gold hover:text-white transition-all shadow-sm"
+                                >
+                                    <Linkedin size={18} />
+                                </a>
+                                <a
+                                    href="https://www.youtube.com/@ayodhyaagarbatti"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="YouTube (@ayodhyaagarbatti)"
+                                    className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-charcoal hover:bg-gold hover:text-white transition-all shadow-sm"
+                                >
+                                    <Youtube size={18} />
+                                </a>
                             </div>
                         </div>
                     </div>

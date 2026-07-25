@@ -29,17 +29,17 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
     });
 
     return (
-        <section className={`py-24 relative overflow-hidden ${isStandaloneShop ? 'bg-ivory text-charcoal pt-36' : 'bg-transparent text-ivory'}`}>
-            {/* Added to Cart Toast Notification */}
+        <section className={`py-16 md:py-24 relative overflow-hidden ${isStandaloneShop ? 'bg-ivory text-charcoal pt-28 md:pt-36' : 'bg-transparent text-ivory'}`}>
+            {/* Added to Cart Toast Notification - Mobile Centered Bottom */}
             <AnimatePresence>
                 {addedToast && (
                     <motion.div
                         initial={{ opacity: 0, y: 50, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                        className="fixed bottom-8 right-8 z-[120] bg-charcoal text-ivory border border-gold px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3"
+                        className="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 z-[120] bg-charcoal text-ivory border border-gold px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3"
                     >
-                        <CheckCircle className="text-gold w-6 h-6" />
+                        <CheckCircle className="text-gold w-6 h-6 shrink-0" />
                         <div>
                             <p className="text-xs font-bold uppercase tracking-wider text-gold">Added to Sanctuary Bag</p>
                             <p className="text-sm font-serif">{addedToast}</p>

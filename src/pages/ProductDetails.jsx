@@ -89,16 +89,16 @@ const ProductDetails = ({ addToCart }) => {
 
     return (
         <div className="bg-ivory text-charcoal min-h-screen pt-32 pb-24 relative">
-            {/* Added Toast */}
+            {/* Added Toast - Mobile Centered Bottom */}
             <AnimatePresence>
                 {addedToast && (
                     <motion.div
                         initial={{ opacity: 0, y: 50, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                        className="fixed bottom-8 right-8 z-[120] bg-charcoal text-ivory border border-gold px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3"
+                        className="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 z-[120] bg-charcoal text-ivory border border-gold px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3"
                     >
-                        <Check className="text-gold w-6 h-6" />
+                        <Check className="text-gold w-6 h-6 shrink-0" />
                         <div>
                             <p className="text-xs font-bold uppercase tracking-wider text-gold">Added to Sanctuary Bag</p>
                             <p className="text-sm font-serif">{quantity}x {product.name} ({product.packOptions?.[selectedPack]?.size || 'Standard'})</p>
@@ -107,23 +107,23 @@ const ProductDetails = ({ addToCart }) => {
                 )}
             </AnimatePresence>
 
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto px-4 md:px-6">
                 {/* Navigation Breadcrumb */}
-                <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-gray-500 mb-8 font-bold">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs uppercase tracking-widest text-gray-500 mb-6 sm:mb-8 font-bold">
                     <Link to="/shop" className="hover:text-gold transition-colors flex items-center gap-1">
                         <ArrowLeft size={14} /> Back to Collection
                     </Link>
                     <span>/</span>
                     <span className="text-gold">{product.category}</span>
-                    <span>/</span>
-                    <span className="text-charcoal font-semibold">{product.name}</span>
+                    <span className="hidden sm:inline">/</span>
+                    <span className="text-charcoal font-semibold hidden sm:inline">{product.name}</span>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
 
                     {/* Left Column: Image Gallery with Sliding Photos (6 cols) */}
                     <div className="lg:col-span-6 space-y-4">
-                        <div className="relative h-[480px] md:h-[580px] rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-xl group">
+                        <div className="relative h-[360px] sm:h-[480px] md:h-[580px] rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-xl group">
                             <AnimatePresence mode="wait">
                                 <motion.img
                                     key={selectedImage}

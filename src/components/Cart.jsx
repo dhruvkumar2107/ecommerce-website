@@ -72,14 +72,16 @@ const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
                                         <div className="flex items-center border border-charcoal/10 rounded-md bg-white">
                                             <button
                                                 onClick={() => onUpdateQuantity(item.id, -1)}
-                                                className="px-3 py-1 text-gray-400 hover:text-charcoal hover:bg-gray-50"
+                                                className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-charcoal hover:bg-gray-100 font-bold active:bg-gray-200 transition-colors"
+                                                aria-label="Decrease quantity"
                                             >
                                                 -
                                             </button>
-                                            <span className="px-3 text-charcoal font-mono text-sm border-x border-charcoal/10 min-w-[30px] text-center">{item.quantity}</span>
+                                            <span className="px-3 text-charcoal font-mono text-sm border-x border-charcoal/10 min-w-[36px] text-center font-bold">{item.quantity}</span>
                                             <button
                                                 onClick={() => onUpdateQuantity(item.id, 1)}
-                                                className="px-3 py-1 text-gray-400 hover:text-charcoal hover:bg-gray-50"
+                                                className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-charcoal hover:bg-gray-100 font-bold active:bg-gray-200 transition-colors"
+                                                aria-label="Increase quantity"
                                             >
                                                 +
                                             </button>

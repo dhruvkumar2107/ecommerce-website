@@ -276,42 +276,42 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
                                     <h2 className="font-heading text-xl mb-6 flex items-center gap-2">
                                         <MapPin className="text-gold" size={20} /> Shipping Address
                                     </h2>
-                                    <form id="address-form" onSubmit={nextStep} className="space-y-6">
-                                        <div className="grid grid-cols-2 gap-6">
+                                    <form id="address-form" onSubmit={nextStep} className="space-y-5 sm:space-y-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">First Name</label>
-                                                <input required type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-lg focus:outline-none focus:border-gold transition-colors" placeholder="First Name" />
+                                                <input required type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="First Name" />
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Last Name</label>
-                                                <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-lg focus:outline-none focus:border-gold transition-colors" placeholder="Last Name" />
+                                                <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="Last Name" />
                                             </div>
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Street Address</label>
-                                            <input required type="text" name="addres" value={formData.addres} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-lg focus:outline-none focus:border-gold transition-colors" placeholder="House No, Street Name" />
+                                            <input required type="text" name="addres" value={formData.addres} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="House No, Street Name" />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">City</label>
-                                                <input required type="text" name="city" value={formData.city} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-lg focus:outline-none focus:border-gold transition-colors" placeholder="City" />
+                                                <input required type="text" name="city" value={formData.city} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="City" />
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Pincode</label>
-                                                <input required type="text" name="pincode" value={formData.pincode} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-lg focus:outline-none focus:border-gold transition-colors" placeholder="ZIP Code" />
+                                                <input required type="text" name="pincode" value={formData.pincode} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="ZIP Code" />
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Phone</label>
-                                                <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-lg focus:outline-none focus:border-gold transition-colors" placeholder="+91 98765 43210" />
+                                                <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="+91 98765 43210" />
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Email</label>
-                                                <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-lg focus:outline-none focus:border-gold transition-colors" placeholder="email@address.com" />
+                                                <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="email@address.com" />
                                             </div>
                                         </div>
-                                        <button type="submit" className="w-full bg-charcoal text-white py-4 rounded-lg font-bold uppercase tracking-widest hover:bg-gold hover:text-charcoal transition-all mt-4">
+                                        <button type="submit" className="w-full bg-charcoal text-white py-4 rounded-lg font-bold uppercase tracking-widest hover:bg-gold hover:text-charcoal transition-all mt-4 text-xs sm:text-sm">
                                             Continue to Review
                                         </button>
                                     </form>

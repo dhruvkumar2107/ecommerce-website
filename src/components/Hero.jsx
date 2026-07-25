@@ -39,7 +39,7 @@ const Hero = () => {
                         Handcrafted in the Holy City
                     </motion.span>
 
-                    <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-ivory mb-8 leading-[0.9] drop-shadow-2xl">
+                    <h1 className="font-heading text-4xl sm:text-6xl md:text-8xl lg:text-9xl text-ivory mb-6 md:mb-8 leading-[0.9] drop-shadow-2xl">
                         <motion.span
                             initial={{ y: 50, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
@@ -52,7 +52,7 @@ const Hero = () => {
                             initial={{ y: 50, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-                            className="block font-bold text-transparent bg-clip-text bg-gradient-to-b from-gold via-gold/80 to-gold/40 pb-4 italic font-serif"
+                            className="block font-bold text-transparent bg-clip-text bg-gradient-to-b from-gold via-gold/80 to-gold/40 pb-2 md:pb-4 italic font-serif"
                         >
                             Aroma
                         </motion.span>
@@ -62,13 +62,13 @@ const Hero = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5, duration: 1 }}
-                        className="font-body text-ivory/70 text-lg md:text-xl font-light tracking-wide max-w-xl mx-auto mb-12 leading-relaxed"
+                        className="font-body text-ivory/70 text-base md:text-xl font-light tracking-wide max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed px-2"
                     >
                         Experience the divine fragrance of Ayodhya. <br />
                         <span className="text-gold/90 font-serif italic">Where prayer meets purity.</span>
                     </motion.p>
 
-                    <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md mx-auto px-4">
                         <motion.button
                             onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}
                             whileHover={{ scale: 1.02 }}
@@ -76,7 +76,7 @@ const Hero = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.7, duration: 0.8 }}
-                            className="bg-gold text-charcoal px-8 py-4 uppercase tracking-[0.2em] text-[10px] font-bold shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:bg-ivory hover:text-charcoal transition-all duration-300 min-w-[180px]"
+                            className="bg-gold text-charcoal w-full sm:w-auto px-8 py-4 uppercase tracking-[0.2em] text-xs font-bold shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:bg-ivory hover:text-charcoal transition-all duration-300 min-w-[180px]"
                         >
                             Shop Collection
                         </motion.button>
@@ -88,7 +88,7 @@ const Hero = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.8, duration: 0.8 }}
-                            className="bg-transparent text-ivory px-8 py-4 uppercase tracking-[0.2em] text-[10px] font-bold border border-white/20 hover:border-gold hover:text-gold transition-all duration-300 min-w-[180px] backdrop-blur-sm"
+                            className="bg-transparent text-ivory w-full sm:w-auto px-8 py-4 uppercase tracking-[0.2em] text-xs font-bold border border-white/20 hover:border-gold hover:text-gold transition-all duration-300 min-w-[180px] backdrop-blur-sm"
                         >
                             Our Rituals
                         </motion.button>

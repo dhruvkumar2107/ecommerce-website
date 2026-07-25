@@ -1,9 +1,11 @@
-# User-agent directives for Ayodhya Agarbatti
+# User-agent directives for Search Crawlers & AI Engine Bots
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /checkout
+Disallow: /success
 
-# Allow AI Generative Engines (GEO & AEO indexing)
+# Specific AI Engine Crawlers (AEO / GEO Optimization)
 User-agent: GPTBot
 Allow: /
 
@@ -17,6 +19,9 @@ User-agent: ClaudeBot
 Allow: /
 
 User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
 Allow: /
 
 # Sitemap Location

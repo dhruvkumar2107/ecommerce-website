@@ -1,0 +1,22 @@
+{
+  "short_name": "Ayodhya Agarbatti",
+  "name": "Ayodhya Agarbatti | Sacred Incense Hand-Rolled in Ayodhya",
+  "description": "100% Charcoal-Free, non-toxic luxury incense sticks created with natural temple flowers and organic essential oils.",
+  "icons": [
+    {
+      "src": "/images/ayodhya_logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/ayodhya_logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#1A0505",
+  "theme_color": "#1A0505",
+  "display": "standalone",
+  "orientation": "portrait"
+}

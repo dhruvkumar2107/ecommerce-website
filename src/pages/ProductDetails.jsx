@@ -6,8 +6,9 @@ import {
     Check, ShoppingBag, Info, Heart, Share2, HelpCircle, UserCheck,
     ChevronLeft, ChevronRight 
 } from 'lucide-react';
-import { collection, addDoc, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
+import SEO from '../components/SEO';
 import { products } from '../data/products';
 
 const ProductDetails = ({ addToCart }) => {
@@ -84,11 +85,41 @@ const ProductDetails = ({ addToCart }) => {
         }
     };
 
-    // Related products (excluding current)
-    const relatedProducts = products.filter(p => p.id !== product.id).slice(0, 3);
+    const productSchema = {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.name,
+        "image": product.images?.map(img => `https://www.ayodhyaagarbatti.in${img}`),
+        "description": product.shortDesc,
+        "brand": {
+            "@type": "Brand",
+            "name": "Ayodhya Agarbatti"
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": `https://www.ayodhyaagarbatti.in/product/${product.id}`,
+            "priceCurrency": "INR",
+            "price": "299",
+            "availability": "https://schema.org/InStock",
+            "itemCondition": "https://schema.org/NewCondition"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": product.rating || 4.9,
+            "reviewCount": product.reviewCount || 164
+        }
+    };
 
     return (
         <div className="bg-ivory text-charcoal min-h-screen pt-32 pb-24 relative">
+            <SEO
+                title={`${product.name} | Ayodhya Agarbatti (₹299)`}
+                description={product.shortDesc}
+                keywords={`${product.name}, ${product.variant}, Ayodhya Agarbatti, natural incense sticks, charcoal free agarbatti, buy online India`}
+                canonical={`https://www.ayodhyaagarbatti.in/product/${product.id}`}
+                ogImage={product.images?.[0] ? `https://www.ayodhyaagarbatti.in${product.images[0]}` : undefined}
+                schema={productSchema}
+            />
             {/* Added Toast - Mobile Centered Bottom */}
             <AnimatePresence>
                 {addedToast && (

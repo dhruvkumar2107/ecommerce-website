@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { Globe } from 'lucide-react';
 
 // Analytics & Fine-grained Event Logging
 import { logPageView, logCartAction } from './utils/analyticsLogger';
+import { trackPageView, trackAddToCart } from './utils/googleAnalytics';
 
 // Components
 import Navbar from './components/Navbar';
@@ -25,20 +28,50 @@ import Admin from './pages/Admin';
 import Checkout from './pages/Checkout';
 import NotFound from './pages/NotFound';
 
-const TopBar = () => (
-    <div className="bg-charcoal text-ivory text-[10px] font-bold tracking-[0.2em] text-center py-2.5 uppercase border-b border-white/10 flex items-center justify-center gap-4">
-        <span>✨ Hand-Rolled in Ayodhya • 100% Charcoal-Free</span>
-        <span className="hidden md:inline">•</span>
-        <span className="hidden md:inline text-gold">Complimentary Shipping on Orders Over ₹999</span>
-    </div>
-);
+const TopBar = () => {
+    const { t, i18n } = useTranslation();
 
-// Automatic Route Navigation Activity Tracker
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+        localStorage.setItem('ayodhya_lang', lng);
+    };
+
+    return (
+        <div className="bg-charcoal text-ivory text-[10px] font-bold tracking-[0.2em] text-center py-2 uppercase border-b border-white/10 flex items-center justify-between px-4 md:px-8">
+            <div className="flex-1 text-center md:text-left flex items-center justify-center md:justify-start gap-4">
+                <span>{t('topBar')}</span>
+                <span className="hidden md:inline">•</span>
+                <span className="hidden md:inline text-gold">{t('freeShipping')}</span>
+            </div>
+
+            {/* i18n Language Selector */}
+            <div className="flex items-center gap-1.5 shrink-0 bg-white/10 px-2.5 py-1 rounded-full border border-white/10 text-[9px]">
+                <Globe size={11} className="text-gold" />
+                <button
+                    onClick={() => changeLanguage('en')}
+                    className={`px-1.5 py-0.5 rounded transition-colors ${i18n.language === 'en' ? 'bg-gold text-charcoal font-black' : 'text-white/70 hover:text-white'}`}
+                >
+                    EN
+                </button>
+                <span className="text-white/30">|</span>
+                <button
+                    onClick={() => changeLanguage('hi')}
+                    className={`px-1.5 py-0.5 rounded transition-colors ${i18n.language === 'hi' ? 'bg-gold text-charcoal font-black' : 'text-white/70 hover:text-white'}`}
+                >
+                    हिंदी
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// Automatic Route Navigation Activity & GA4 Tracker
 const PageTracker = () => {
     const location = useLocation();
 
     useEffect(() => {
         logPageView(location.pathname, document.title);
+        trackPageView(location.pathname, document.title);
     }, [location]);
 
     return null;
@@ -88,10 +121,11 @@ function AppContent() {
                 nextItems = [...prev, { ...product, quantity: product.quantity || 1 }];
             }
 
-            // Log detailed minute cart addition event to database
+            // Log detailed minute cart addition event to database & GA4
             const cartTotal = calculateCartTotal(nextItems);
             const totalCount = nextItems.reduce((acc, i) => acc + i.quantity, 0);
             logCartAction('ADD_TO_CART', product, cartTotal, totalCount);
+            trackAddToCart(product, product.quantity || 1);
 
             return nextItems;
         });

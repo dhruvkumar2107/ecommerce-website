@@ -3,7 +3,10 @@ import { ShoppingBag, Search, User, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
+import { useTranslation } from 'react-i18next';
+
 const Navbar = ({ cartCount, onCartClick, onSearchClick }) => {
+    const { t } = useTranslation();
     const [scrolled, setScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
@@ -18,7 +21,7 @@ const Navbar = ({ cartCount, onCartClick, onSearchClick }) => {
     }, []);
 
     const handleNavClick = (item, e) => {
-        if (item.name === 'Rituals') {
+        if (item.key === 'navRituals' || item.name === 'Rituals') {
             e.preventDefault();
             if (location.pathname !== '/') {
                 navigate('/');
@@ -37,6 +40,14 @@ const Navbar = ({ cartCount, onCartClick, onSearchClick }) => {
 
     const textClass = "text-ivory";
 
+    const navItems = [
+        { name: t('navHome'), key: 'navHome', path: '/' },
+        { name: t('navShop'), key: 'navShop', path: '/shop' },
+        { name: t('navRituals'), key: 'navRituals', path: '/#ritual' },
+        { name: t('navJournal'), key: 'navJournal', path: '/blog' },
+        { name: t('navContact'), key: 'navContact', path: '/contact' }
+    ];
+
     return (
         <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${navClass}`}>
             {scrolled && <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>}
@@ -53,15 +64,9 @@ const Navbar = ({ cartCount, onCartClick, onSearchClick }) => {
 
                 {/* Desktop Menu */}
                 <div className={`hidden md:flex items-center space-x-10 ${textClass}`}>
-                    {[
-                        { name: 'Home', path: '/' },
-                        { name: 'Shop', path: '/shop' },
-                        { name: 'Rituals', path: '/#ritual' },
-                        { name: 'Journal', path: '/blog' },
-                        { name: 'Contact', path: '/contact' }
-                    ].map((item) => (
+                    {navItems.map((item) => (
                         <Link
-                            key={item.name}
+                            key={item.key}
                             to={item.path}
                             onClick={(e) => handleNavClick(item, e)}
                             className="text-xs font-bold uppercase tracking-[0.2em] hover:text-gold transition-all relative group py-1"

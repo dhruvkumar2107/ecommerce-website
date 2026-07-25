@@ -4,10 +4,10 @@ export const products = [
         slug: "coffee-incense",
         name: "Espresso Ground Incense",
         variant: "Roasted Coffee & Dark Cocoa Blend",
-        price: "₹450",
-        numericPrice: 450,
-        originalPrice: "₹600",
-        discount: "25% OFF",
+        price: "₹299",
+        numericPrice: 299,
+        originalPrice: "₹500",
+        discount: "40% OFF",
         category: "Focus & Energy",
         badge: "Best for Focus",
         rating: 4.9,
@@ -36,9 +36,9 @@ export const products = [
         ],
         images: ["/images/espresso.png", "/images/product_coffee.jpg"],
         packOptions: [
-            { size: "Single Pack (33 Sticks)", price: 450, tag: "Standard" },
-            { size: "Trio Value Pack (99 Sticks)", price: 1199, tag: "Save 12%" },
-            { size: "Sanctuary Gift Set (33 Sticks + Brass Burner)", price: 1649, tag: "Best Value" }
+            { size: "Single Pack (33 Sticks)", price: 299, tag: "Standard" },
+            { size: "Trio Value Pack (99 Sticks)", price: 799, tag: "Save 12%" },
+            { size: "Sanctuary Gift Set (33 Sticks + Brass Burner)", price: 1299, tag: "Best Value" }
         ],
         faqs: [
             {
@@ -78,10 +78,10 @@ export const products = [
         slug: "vanilla-incense",
         name: "Madagascan Calm Incense",
         variant: "French Vanilla & Botanical Pods",
-        price: "₹450",
-        numericPrice: 450,
-        originalPrice: "₹600",
-        discount: "25% OFF",
+        price: "₹299",
+        numericPrice: 299,
+        originalPrice: "₹500",
+        discount: "40% OFF",
         category: "Relaxation & Sleep",
         badge: "Best Seller",
         rating: 5.0,
@@ -110,9 +110,9 @@ export const products = [
         ],
         images: ["/images/vanilla.png", "/images/product_vanilla_group.jpg"],
         packOptions: [
-            { size: "Single Pack (33 Sticks)", price: 450, tag: "Standard" },
-            { size: "Trio Value Pack (99 Sticks)", price: 1199, tag: "Save 12%" },
-            { size: "Sanctuary Gift Set (33 Sticks + Brass Burner)", price: 1649, tag: "Best Value" }
+            { size: "Single Pack (33 Sticks)", price: 299, tag: "Standard" },
+            { size: "Trio Value Pack (99 Sticks)", price: 799, tag: "Save 12%" },
+            { size: "Sanctuary Gift Set (33 Sticks + Brass Burner)", price: 1299, tag: "Best Value" }
         ],
         faqs: [
             {
@@ -140,10 +140,10 @@ export const products = [
         slug: "lemon-incense",
         name: "Citrus Clarity Incense",
         variant: "Amalfi Zest Lemon & Verbena",
-        price: "₹380",
-        numericPrice: 380,
-        originalPrice: "₹500",
-        discount: "24% OFF",
+        price: "₹299",
+        numericPrice: 299,
+        originalPrice: "₹450",
+        discount: "33% OFF",
         category: "Purification & Cleansing",
         badge: "Pure Aura Cleansing",
         rating: 4.8,
@@ -172,9 +172,9 @@ export const products = [
         ],
         images: ["/images/lemon.png", "/images/product_lemon.jpg"],
         packOptions: [
-            { size: "Single Pack (33 Sticks)", price: 380, tag: "Standard" },
-            { size: "Trio Value Pack (99 Sticks)", price: 999, tag: "Save 12%" },
-            { size: "Sanctuary Gift Set (33 Sticks + Brass Burner)", price: 1499, tag: "Best Value" }
+            { size: "Single Pack (33 Sticks)", price: 299, tag: "Standard" },
+            { size: "Trio Value Pack (99 Sticks)", price: 799, tag: "Save 12%" },
+            { size: "Sanctuary Gift Set (33 Sticks + Brass Burner)", price: 1299, tag: "Best Value" }
         ],
         faqs: [
             {
@@ -198,10 +198,10 @@ export const products = [
         slug: "orange-incense",
         name: "Creative Spark Incense",
         variant: "Nagpur Wild Orange & Sacred Tulsi",
-        price: "₹380",
-        numericPrice: 380,
-        originalPrice: "₹500",
-        discount: "24% OFF",
+        price: "₹299",
+        numericPrice: 299,
+        originalPrice: "₹450",
+        discount: "33% OFF",
         category: "Joy & Creative Flow",
         badge: "Best for Artists",
         rating: 4.9,
@@ -230,9 +230,9 @@ export const products = [
         ],
         images: ["/images/orange.png", "/images/product_orange.jpg"],
         packOptions: [
-            { size: "Single Pack (33 Sticks)", price: 380, tag: "Standard" },
-            { size: "Trio Value Pack (99 Sticks)", price: 999, tag: "Save 12%" },
-            { size: "Sanctuary Gift Set (33 Sticks + Brass Burner)", price: 1499, tag: "Best Value" }
+            { size: "Single Pack (33 Sticks)", price: 299, tag: "Standard" },
+            { size: "Trio Value Pack (99 Sticks)", price: 799, tag: "Save 12%" },
+            { size: "Sanctuary Gift Set (33 Sticks + Brass Burner)", price: 1299, tag: "Best Value" }
         ],
         faqs: [
             {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
     Package, CheckCircle, Download, KeyRound, Lock, Trash2, 
     Search, Mail, Users, Star, IndianRupee, Eye, AlertCircle, RefreshCw, 
-    Clock, Check, Filter
+    Clock, Check, Filter, ExternalLink
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from '../firebase';
@@ -12,6 +12,7 @@ const Admin = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'messages' | 'subscribers' | 'reviews'
+    const [firestorePermissionError, setFirestorePermissionError] = useState(false);
 
     // Realtime Database Data
     const [orders, setOrders] = useState([]);
@@ -24,6 +25,38 @@ const Admin = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
 
+    const loadLocalBackupOrders = () => {
+        try {
+            return JSON.parse(localStorage.getItem('ayodhya_orders') || '[]');
+        } catch (e) {
+            return [];
+        }
+    };
+
+    const loadLocalBackupMessages = () => {
+        try {
+            return JSON.parse(localStorage.getItem('ayodhya_messages') || '[]');
+        } catch (e) {
+            return [];
+        }
+    };
+
+    const loadLocalBackupSubscribers = () => {
+        try {
+            return JSON.parse(localStorage.getItem('ayodhya_subscribers') || '[]');
+        } catch (e) {
+            return [];
+        }
+    };
+
+    const loadLocalBackupReviews = () => {
+        try {
+            return JSON.parse(localStorage.getItem('ayodhya_reviews') || '[]');
+        } catch (e) {
+            return [];
+        }
+    };
+
     useEffect(() => {
         // Check session storage
         const auth = sessionStorage.getItem('adminAuth');
@@ -31,49 +64,101 @@ const Admin = () => {
             setIsAuthenticated(true);
         }
 
+        // Initialize with LocalStorage backup data first
+        const localOrders = loadLocalBackupOrders();
+        const localMessages = loadLocalBackupMessages();
+        const localSubs = loadLocalBackupSubscribers();
+        const localRevs = loadLocalBackupReviews();
+
+        setOrders(localOrders);
+        setMessages(localMessages);
+        setSubscribers(localSubs);
+        setReviews(localRevs);
+
         // 1. Subscribe to Orders Collection in Firestore
-        const qOrders = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-        const unsubOrders = onSnapshot(qOrders, (snapshot) => {
-            const list = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setOrders(list);
+        let unsubOrders = () => {};
+        try {
+            const qOrders = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+            unsubOrders = onSnapshot(qOrders, (snapshot) => {
+                const fsOrders = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                // Merge Firestore orders with LocalStorage backup orders (avoiding duplicate IDs)
+                const mergedMap = new Map();
+                [...fsOrders, ...localOrders].forEach(item => {
+                    const key = item.orderNumber || item.id;
+                    if (key && !mergedMap.has(key)) {
+                        mergedMap.set(key, item);
+                    }
+                });
+                setOrders(Array.from(mergedMap.values()));
+                setLoading(false);
+            }, (err) => {
+                console.warn("Firestore orders subscription note:", err);
+                if (err.code === 'permission-denied') setFirestorePermissionError(true);
+                setLoading(false);
+            });
+        } catch (e) {
             setLoading(false);
-        }, (err) => {
-            console.error("Error subscribing to orders:", err);
-            setLoading(false);
-        });
+        }
 
         // 2. Subscribe to Contact Messages Collection in Firestore
-        const qMessages = query(collection(db, "contact_messages"), orderBy("createdAt", "desc"));
-        const unsubMessages = onSnapshot(qMessages, (snapshot) => {
-            const list = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setMessages(list);
-        }, (err) => console.error("Error subscribing to messages:", err));
+        let unsubMessages = () => {};
+        try {
+            const qMessages = query(collection(db, "contact_messages"), orderBy("createdAt", "desc"));
+            unsubMessages = onSnapshot(qMessages, (snapshot) => {
+                const fsMessages = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                const mergedMap = new Map();
+                [...fsMessages, ...localMessages].forEach(item => {
+                    if (item.id && !mergedMap.has(item.id)) mergedMap.set(item.id, item);
+                });
+                setMessages(Array.from(mergedMap.values()));
+            }, (err) => {
+                if (err.code === 'permission-denied') setFirestorePermissionError(true);
+            });
+        } catch (e) {}
 
         // 3. Subscribe to Subscribers Collection in Firestore
-        const qSubscribers = query(collection(db, "subscribers"), orderBy("createdAt", "desc"));
-        const unsubSubscribers = onSnapshot(qSubscribers, (snapshot) => {
-            const list = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setSubscribers(list);
-        }, (err) => console.error("Error subscribing to subscribers:", err));
+        let unsubSubscribers = () => {};
+        try {
+            const qSubscribers = query(collection(db, "subscribers"), orderBy("createdAt", "desc"));
+            unsubSubscribers = onSnapshot(qSubscribers, (snapshot) => {
+                const fsSubscribers = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                const mergedMap = new Map();
+                [...fsSubscribers, ...localSubs].forEach(item => {
+                    if (item.email && !mergedMap.has(item.email)) mergedMap.set(item.email, item);
+                });
+                setSubscribers(Array.from(mergedMap.values()));
+            }, (err) => {
+                if (err.code === 'permission-denied') setFirestorePermissionError(true);
+            });
+        } catch (e) {}
 
         // 4. Subscribe to Reviews Collection in Firestore
-        const qReviews = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
-        const unsubReviews = onSnapshot(qReviews, (snapshot) => {
-            const list = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setReviews(list);
-        }, (err) => console.error("Error subscribing to reviews:", err));
+        let unsubReviews = () => {};
+        try {
+            const qReviews = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+            unsubReviews = onSnapshot(qReviews, (snapshot) => {
+                const fsReviews = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                const mergedMap = new Map();
+                [...fsReviews, ...localRevs].forEach(item => {
+                    if (item.id && !mergedMap.has(item.id)) mergedMap.set(item.id, item);
+                });
+                setReviews(Array.from(mergedMap.values()));
+            }, (err) => {
+                if (err.code === 'permission-denied') setFirestorePermissionError(true);
+            });
+        } catch (e) {}
 
         return () => {
             unsubOrders();
@@ -276,6 +361,32 @@ const Admin = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* Firestore Rules Troubleshooting Alert */}
+                {firestorePermissionError && (
+                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-start gap-3">
+                        <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={20} />
+                        <div className="text-xs text-amber-900 space-y-1">
+                            <p className="font-bold">Firebase Firestore Rules Notice:</p>
+                            <p>
+                                Firebase Firestore currently rejected direct remote reads/writes due to default security rules. Data is currently safely stored in local backup.
+                            </p>
+                            <p className="font-medium mt-1">
+                                To enable public writing to Firestore: Go to <a href="https://console.firebase.google.com/project/ayodhya-agarbatti/firestore/rules" target="_blank" rel="noreferrer" className="underline font-bold text-amber-800">Firebase Console ➔ Firestore Database ➔ Rules</a> and set:
+                            </p>
+                            <pre className="bg-amber-100/80 p-2 rounded text-[11px] font-mono text-amber-950 mt-1">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}`}
+                            </pre>
+                        </div>
+                    </div>
+                )}
 
                 {/* Dashboard Metrics */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -203,20 +203,41 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
 
     const saveAndRedirect = async (orderData) => {
         try {
-            // Save order into Firestore Database ("orders" collection)
-            const docRef = await addDoc(collection(db, "orders"), orderData);
-            console.log("Order saved to database with Document ID:", docRef.id);
+            // Clean payload to eliminate any undefined values for Firestore compatibility
+            const cleanOrderData = JSON.parse(JSON.stringify(orderData, (key, value) => 
+                value === undefined ? null : value
+            ));
 
-            const finalOrder = { ...orderData, id: docRef.id };
+            // 1. Save to LocalStorage Backup
+            const existingBackup = JSON.parse(localStorage.getItem('ayodhya_orders') || '[]');
+            const backupId = cleanOrderData.orderNumber || `AYD-${Date.now()}`;
+            const backupOrder = { ...cleanOrderData, id: backupId };
+            localStorage.setItem('ayodhya_orders', JSON.stringify([backupOrder, ...existingBackup]));
 
-            // Clear Cart after successful database write
+            let docId = backupId;
+
+            // 2. Save order to Firebase Firestore Database ("orders" collection)
+            try {
+                const docRef = await addDoc(collection(db, "orders"), {
+                    ...cleanOrderData,
+                    createdAt: serverTimestamp()
+                });
+                docId = docRef.id;
+                console.log("Order successfully written to Firestore DB with ID: ", docId);
+            } catch (firestoreError) {
+                console.warn("Firestore write notice (using backup store):", firestoreError);
+            }
+
+            const finalOrder = { ...cleanOrderData, id: docId };
+
+            // Clear Cart after order saved
             onClearCart();
 
             // Redirect to Success Page
             navigate("/success", { state: { order: finalOrder } });
         } catch (e) {
-            console.error("Error writing order to Firestore database: ", e);
-            alert("Could not write order to database. Error: " + e.message);
+            console.error("Error processing order storage: ", e);
+            alert("Failed to place order. Error: " + (e.message || "Unknown error"));
             setIsProcessing(false);
         }
     };

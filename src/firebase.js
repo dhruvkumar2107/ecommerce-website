@@ -15,10 +15,18 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+let analytics = null;
+try {
+    if (typeof window !== 'undefined') {
+        analytics = getAnalytics(app);
+    }
+} catch (e) {
+    console.warn("Firebase analytics init skipped:", e);
+}
 
 // Export services
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
+export { analytics };
 export default app;

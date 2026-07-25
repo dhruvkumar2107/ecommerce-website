@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
     Package, CheckCircle, Download, KeyRound, Lock, Trash2, 
     Search, Mail, Users, Star, IndianRupee, Eye, AlertCircle, RefreshCw, 
-    Clock, Check, Filter, ExternalLink
+    Clock, Check, Filter, ExternalLink, PlusCircle
 } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from '../firebase';
 
 const Admin = () => {
@@ -184,6 +184,39 @@ const Admin = () => {
         sessionStorage.removeItem('adminAuth');
     };
 
+    // --- Create Test Order in Database ---
+    const handleCreateTestOrder = async () => {
+        try {
+            const testOrderNumber = `AYD-${Date.now().toString().slice(-6)}-TEST`;
+            const testOrder = {
+                orderNumber: testOrderNumber,
+                customer: {
+                    name: "Ayodhya Test Buyer",
+                    email: "test.buyer@ayodhyaagarbatti.in",
+                    phone: "+91 98765 00000",
+                    address: "Temple View, Ayodhya - 224123",
+                    paymentMethod: "Razorpay Online"
+                },
+                items: [
+                    { id: 1, name: "Espresso Ground Incense", variant: "Coffee & Cocoa", price: "₹450", quantity: 2 }
+                ],
+                subtotal: 900,
+                shipping: 0,
+                total: 900,
+                paymentStatus: "Paid",
+                status: "Order Placed",
+                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                createdAt: serverTimestamp()
+            };
+
+            const docRef = await addDoc(collection(db, "orders"), testOrder);
+            alert(`Success! Test order written to Firestore Database with Document ID: ${docRef.id}`);
+        } catch (err) {
+            console.error("Error creating test order in database:", err);
+            alert("Failed to write to database: " + err.message);
+        }
+    };
+
     // --- Order Database Operations ---
     const handleUpdateOrderStatus = async (orderId, newStatus) => {
         try {
@@ -347,6 +380,12 @@ const Admin = () => {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            onClick={handleCreateTestOrder}
+                            className="bg-gold text-charcoal px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-charcoal hover:text-gold transition-all flex items-center gap-2 shadow-sm"
+                        >
+                            <PlusCircle size={15} /> Create Sample Order in Database
+                        </button>
                         <button
                             onClick={downloadCSV}
                             className="bg-charcoal text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gold hover:text-charcoal transition-all flex items-center gap-2 shadow-sm"

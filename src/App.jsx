@@ -26,6 +26,7 @@ import Contact from './pages/Contact';
 import ProductDetails from './pages/ProductDetails';
 import Admin from './pages/Admin';
 import Checkout from './pages/Checkout';
+import ReturnPolicy from './pages/ReturnPolicy';
 import NotFound from './pages/NotFound';
 
 const TopBar = () => {
@@ -197,6 +198,7 @@ function AppContent() {
                         <Route path="/checkout" element={<Checkout cartItems={cartItems} onClearCart={clearCart} />} />
                         <Route path="/success" element={<PaymentSuccess />} />
                         <Route path="/admin" element={<Admin />} />
+                        <Route path="/return-policy" element={<ReturnPolicy />} />
                         <Route path="/product/:id" element={<ProductDetails addToCart={addToCart} />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>

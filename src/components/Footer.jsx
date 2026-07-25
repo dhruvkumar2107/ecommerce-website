@@ -100,11 +100,12 @@ const Footer = () => {
 
                 {/* Links Column 2 */}
                 <div className="col-span-1">
-                    <h4 className="font-heading text-xs font-bold uppercase tracking-[0.2em] mb-8 text-gray-500">Company</h4>
+                    <h4 className="font-heading text-xs font-bold uppercase tracking-[0.2em] mb-8 text-gray-500">Company & Legal</h4>
                     <ul className="space-y-4 text-sm font-medium text-gray-300">
                         <li><Link to="/#heritage" className="hover:text-gold transition-colors">Our Story</Link></li>
                         <li><Link to="/blog" className="hover:text-gold transition-colors">Journal</Link></li>
                         <li><Link to="/contact" className="hover:text-gold transition-colors">Contact Us</Link></li>
+                        <li><Link to="/return-policy" className="hover:text-gold transition-colors text-gold/90 font-bold">Return & Refund Policy</Link></li>
                     </ul>
                 </div>
 

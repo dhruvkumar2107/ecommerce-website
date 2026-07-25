@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { 
     Package, CheckCircle, Download, KeyRound, Lock, Trash2, 
     Search, Mail, Users, Star, IndianRupee, Eye, AlertCircle, RefreshCw, 
-    Clock, Check, Filter, ExternalLink, PlusCircle
+    Clock, Check, Filter, ExternalLink, PlusCircle, Activity, ShoppingCart, 
+    Compass, Monitor, Smartphone, Globe
 } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, limit } from "firebase/firestore";
 import { db } from '../firebase';
 
 const Admin = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'messages' | 'subscribers' | 'reviews'
+    const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'activity' | 'messages' | 'subscribers' | 'reviews'
     const [firestorePermissionError, setFirestorePermissionError] = useState(false);
 
     // Realtime Database Data
     const [orders, setOrders] = useState([]);
+    const [activityLogs, setActivityLogs] = useState([]);
     const [messages, setMessages] = useState([]);
     const [subscribers, setSubscribers] = useState([]);
     const [reviews, setReviews] = useState([]);
@@ -24,34 +26,11 @@ const Admin = () => {
     // Filters & Search
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const [activityFilter, setActivityFilter] = useState('ALL');
 
-    const loadLocalBackupOrders = () => {
+    const loadLocalBackup = (key) => {
         try {
-            return JSON.parse(localStorage.getItem('ayodhya_orders') || '[]');
-        } catch (e) {
-            return [];
-        }
-    };
-
-    const loadLocalBackupMessages = () => {
-        try {
-            return JSON.parse(localStorage.getItem('ayodhya_messages') || '[]');
-        } catch (e) {
-            return [];
-        }
-    };
-
-    const loadLocalBackupSubscribers = () => {
-        try {
-            return JSON.parse(localStorage.getItem('ayodhya_subscribers') || '[]');
-        } catch (e) {
-            return [];
-        }
-    };
-
-    const loadLocalBackupReviews = () => {
-        try {
-            return JSON.parse(localStorage.getItem('ayodhya_reviews') || '[]');
+            return JSON.parse(localStorage.getItem(key) || '[]');
         } catch (e) {
             return [];
         }
@@ -65,12 +44,14 @@ const Admin = () => {
         }
 
         // Initialize with LocalStorage backup data first
-        const localOrders = loadLocalBackupOrders();
-        const localMessages = loadLocalBackupMessages();
-        const localSubs = loadLocalBackupSubscribers();
-        const localRevs = loadLocalBackupReviews();
+        const localOrders = loadLocalBackup('ayodhya_orders');
+        const localLogs = loadLocalBackup('ayodhya_activity_logs');
+        const localMessages = loadLocalBackup('ayodhya_messages');
+        const localSubs = loadLocalBackup('ayodhya_subscribers');
+        const localRevs = loadLocalBackup('ayodhya_reviews');
 
         setOrders(localOrders);
+        setActivityLogs(localLogs);
         setMessages(localMessages);
         setSubscribers(localSubs);
         setReviews(localRevs);
@@ -84,7 +65,6 @@ const Admin = () => {
                     id: doc.id,
                     ...doc.data()
                 }));
-                // Merge Firestore orders with LocalStorage backup orders (avoiding duplicate IDs)
                 const mergedMap = new Map();
                 [...fsOrders, ...localOrders].forEach(item => {
                     const key = item.orderNumber || item.id;
@@ -95,7 +75,6 @@ const Admin = () => {
                 setOrders(Array.from(mergedMap.values()));
                 setLoading(false);
             }, (err) => {
-                console.warn("Firestore orders subscription note:", err);
                 if (err.code === 'permission-denied') setFirestorePermissionError(true);
                 setLoading(false);
             });
@@ -103,7 +82,27 @@ const Admin = () => {
             setLoading(false);
         }
 
-        // 2. Subscribe to Contact Messages Collection in Firestore
+        // 2. Subscribe to Activity Logs Collection in Firestore (Fine-grained minute activity)
+        let unsubLogs = () => {};
+        try {
+            const qLogs = query(collection(db, "activity_logs"), orderBy("createdAt", "desc"), limit(200));
+            unsubLogs = onSnapshot(qLogs, (snapshot) => {
+                const fsLogs = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                const mergedMap = new Map();
+                [...fsLogs, ...localLogs].forEach(item => {
+                    const key = item.id || `${item.type}-${item.timestamp}`;
+                    if (key && !mergedMap.has(key)) mergedMap.set(key, item);
+                });
+                setActivityLogs(Array.from(mergedMap.values()));
+            }, (err) => {
+                if (err.code === 'permission-denied') setFirestorePermissionError(true);
+            });
+        } catch (e) {}
+
+        // 3. Subscribe to Contact Messages Collection in Firestore
         let unsubMessages = () => {};
         try {
             const qMessages = query(collection(db, "contact_messages"), orderBy("createdAt", "desc"));
@@ -122,7 +121,7 @@ const Admin = () => {
             });
         } catch (e) {}
 
-        // 3. Subscribe to Subscribers Collection in Firestore
+        // 4. Subscribe to Subscribers Collection in Firestore
         let unsubSubscribers = () => {};
         try {
             const qSubscribers = query(collection(db, "subscribers"), orderBy("createdAt", "desc"));
@@ -141,7 +140,7 @@ const Admin = () => {
             });
         } catch (e) {}
 
-        // 4. Subscribe to Reviews Collection in Firestore
+        // 5. Subscribe to Reviews Collection in Firestore
         let unsubReviews = () => {};
         try {
             const qReviews = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
@@ -162,6 +161,7 @@ const Admin = () => {
 
         return () => {
             unsubOrders();
+            unsubLogs();
             unsubMessages();
             unsubSubscribers();
             unsubReviews();
@@ -238,6 +238,15 @@ const Admin = () => {
         } catch (err) {
             console.error("Failed to delete order from database:", err);
             alert("Error deleting order: " + err.message);
+        }
+    };
+
+    // --- Activity Log Deletion ---
+    const handleDeleteLog = async (logId) => {
+        try {
+            await deleteDoc(doc(db, "activity_logs", logId));
+        } catch (err) {
+            console.error("Error deleting log:", err);
         }
     };
 
@@ -327,8 +336,15 @@ const Admin = () => {
         return matchesStatus && matchesQuery;
     });
 
+    const filteredLogs = activityLogs.filter(log => {
+        if (activityFilter === 'ALL') return true;
+        return log.type === activityFilter;
+    });
+
     const totalRevenue = orders.reduce((acc, o) => acc + (parseInt(o.total) || 0), 0);
     const unreadMessagesCount = messages.filter(m => m.status === 'unread').length;
+    const pageViewCount = activityLogs.filter(l => l.type === 'PAGE_VIEW').length;
+    const cartActionCount = activityLogs.filter(l => l.type === 'CART_ACTION').length;
 
     if (!isAuthenticated) {
         return (
@@ -376,7 +392,7 @@ const Admin = () => {
                                 Firestore Live
                             </span>
                         </div>
-                        <p className="text-gray-500 text-xs mt-1">Real-time sync enabled across orders, contacts, subscribers & reviews.</p>
+                        <p className="text-gray-500 text-xs mt-1">Real-time sync enabled across orders, minute activity, cart edits, contacts & reviews.</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
@@ -428,7 +444,7 @@ service cloud.firestore {
                 )}
 
                 {/* Dashboard Metrics */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
                         <div className="w-12 h-12 bg-gold/10 text-gold rounded-lg flex items-center justify-center font-bold">
                             <Package size={22} />
@@ -450,6 +466,16 @@ service cloud.firestore {
                     </div>
 
                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                        <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center font-bold">
+                            <Activity size={22} />
+                        </div>
+                        <div>
+                            <span className="text-xs text-gray-500 font-bold uppercase">Live Activity</span>
+                            <h3 className="text-2xl font-bold text-charcoal">{activityLogs.length}</h3>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
                         <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold relative">
                             <Mail size={22} />
                             {unreadMessagesCount > 0 && (
@@ -464,7 +490,7 @@ service cloud.firestore {
                         </div>
                     </div>
 
-                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4 col-span-2 md:col-span-1">
                         <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center font-bold">
                             <Users size={22} />
                         </div>
@@ -476,16 +502,22 @@ service cloud.firestore {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex border-b border-gray-200 gap-2 bg-white p-2 rounded-xl shadow-sm">
+                <div className="flex border-b border-gray-200 gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto">
                     <button
                         onClick={() => setActiveTab('orders')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'orders' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'orders' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                     >
                         <Package size={16} /> Orders ({orders.length})
                     </button>
                     <button
+                        onClick={() => setActiveTab('activity')}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'activity' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <Activity size={16} className="text-amber-400 animate-pulse" /> Live Activity Stream ({activityLogs.length})
+                    </button>
+                    <button
                         onClick={() => setActiveTab('messages')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative ${activeTab === 'messages' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative whitespace-nowrap ${activeTab === 'messages' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                     >
                         <Mail size={16} /> Messages ({messages.length})
                         {unreadMessagesCount > 0 && (
@@ -496,15 +528,15 @@ service cloud.firestore {
                     </button>
                     <button
                         onClick={() => setActiveTab('subscribers')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'subscribers' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'subscribers' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                     >
                         <Users size={16} /> Subscribers ({subscribers.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('reviews')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'reviews' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'reviews' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
                     >
-                        <Star size={16} /> Product Reviews ({reviews.length})
+                        <Star size={16} /> Reviews ({reviews.length})
                     </button>
                 </div>
 
@@ -635,7 +667,130 @@ service cloud.firestore {
                     </div>
                 )}
 
-                {/* TAB 2: CONTACT MESSAGES */}
+                {/* TAB 2: LIVE ACTIVITY STREAM (FINE-GRAINED MINUTE DETAILS) */}
+                {activeTab === 'activity' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        
+                        {/* Activity Filter Bar */}
+                        <div className="p-4 border-b border-gray-200 bg-gray-50/50 flex justify-between items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <Activity className="text-amber-500" size={16} />
+                                <span className="text-xs font-bold text-charcoal uppercase">Live Event Stream</span>
+                                <span className="text-[11px] text-gray-400">({filteredLogs.length} events recorded)</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Filter size={14} className="text-gray-400" />
+                                <span className="text-xs font-bold text-gray-500 uppercase">Event Type:</span>
+                                <select
+                                    value={activityFilter}
+                                    onChange={(e) => setActivityFilter(e.target.value)}
+                                    className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-charcoal focus:outline-none"
+                                >
+                                    <option value="ALL">All Events</option>
+                                    <option value="PAGE_VIEW">👁️ Page Views ({pageViewCount})</option>
+                                    <option value="CART_ACTION">🛒 Cart Edits ({cartActionCount})</option>
+                                    <option value="CHECKOUT_STEP">💳 Checkout Steps</option>
+                                    <option value="SEARCH">🔍 Search Queries</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {filteredLogs.length === 0 ? (
+                            <div className="p-12 text-center text-gray-400">
+                                No activity events recorded in database yet. Navigate the site or add items to cart to generate live events!
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-gray-100 max-h-[650px] overflow-y-auto">
+                                {filteredLogs.map((log, idx) => (
+                                    <div key={log.id || idx} className="p-4 hover:bg-gray-50/70 transition-colors text-xs flex justify-between items-start gap-4">
+                                        <div className="flex items-start gap-3">
+                                            {/* Icon Badge */}
+                                            <div className="mt-0.5">
+                                                {log.type === 'PAGE_VIEW' && (
+                                                    <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                                                        <Globe size={16} />
+                                                    </span>
+                                                )}
+                                                {log.type === 'CART_ACTION' && (
+                                                    <span className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                                                        <ShoppingCart size={16} />
+                                                    </span>
+                                                )}
+                                                {log.type === 'CHECKOUT_STEP' && (
+                                                    <span className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                                                        <Compass size={16} />
+                                                    </span>
+                                                )}
+                                                {log.type === 'SEARCH' && (
+                                                    <span className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                                                        <Search size={16} />
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Details Content */}
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-charcoal uppercase tracking-wider text-[11px]">
+                                                        {log.type.replace('_', ' ')}
+                                                    </span>
+                                                    <span className="text-[10px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                                                        {log.sessionId}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                                                        <Monitor size={11} /> {log.device} • {log.browser} ({log.screenSize})
+                                                    </span>
+                                                </div>
+
+                                                {/* Event Specific Sub-Details */}
+                                                {log.type === 'PAGE_VIEW' && (
+                                                    <p className="text-gray-700">
+                                                        Visited page <span className="font-mono font-bold text-blue-700">{log.details?.path}</span> ({log.details?.title})
+                                                    </p>
+                                                )}
+
+                                                {log.type === 'CART_ACTION' && (
+                                                    <p className="text-gray-700">
+                                                        <span className="font-bold text-amber-700">{log.details?.action}</span>: {log.details?.itemName} ({log.details?.itemPrice}) — Cart Total: <span className="font-bold text-charcoal">₹{log.details?.cartTotal}</span> ({log.details?.totalItemsInCart} items)
+                                                    </p>
+                                                )}
+
+                                                {log.type === 'CHECKOUT_STEP' && (
+                                                    <p className="text-gray-700">
+                                                        Checkout Step <span className="font-bold text-purple-700">#{log.details?.stepNumber} ({log.details?.stepName})</span> — Total: ₹{log.details?.total}
+                                                    </p>
+                                                )}
+
+                                                {log.type === 'SEARCH' && (
+                                                    <p className="text-gray-700">
+                                                        Searched for <span className="font-bold text-emerald-700">"{log.details?.query}"</span> ({log.details?.resultCount} results)
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Timestamp & Action */}
+                                        <div className="flex items-center gap-3 shrink-0 text-[11px] text-gray-400">
+                                            <span>{log.timestamp || 'Just now'}</span>
+                                            {log.id && (
+                                                <button
+                                                    onClick={() => handleDeleteLog(log.id)}
+                                                    className="text-gray-300 hover:text-red-600 p-1"
+                                                    title="Delete log"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* TAB 3: CONTACT MESSAGES */}
                 {activeTab === 'messages' && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         {messages.length === 0 ? (
@@ -682,7 +837,7 @@ service cloud.firestore {
                     </div>
                 )}
 
-                {/* TAB 3: SUBSCRIBERS */}
+                {/* TAB 4: SUBSCRIBERS */}
                 {activeTab === 'subscribers' && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
                         {subscribers.length === 0 ? (
@@ -715,7 +870,7 @@ service cloud.firestore {
                     </div>
                 )}
 
-                {/* TAB 4: REVIEWS */}
+                {/* TAB 5: REVIEWS */}
                 {activeTab === 'reviews' && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         {reviews.length === 0 ? (

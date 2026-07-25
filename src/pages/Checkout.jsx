@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, MapPin, Lock, CreditCard, Banknote, CheckCircle, ShieldCheck, Truck, Check } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { logCheckoutStep } from '../utils/analyticsLogger';
 
 const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -52,6 +53,8 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
 
     useEffect(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        const stepNames = { 1: 'Address Form', 2: 'Order Review', 3: 'Payment Method Selection' };
+        logCheckoutStep(step, stepNames[step] || 'Checkout', { total, itemCount: cartItems.length });
     }, [step]);
 
     const [formData, setFormData] = useState({
@@ -71,6 +74,7 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
 
     const nextStep = (e) => {
         e.preventDefault();
+        logCheckoutStep(1, 'Address Submitted', { customerName: `${formData.firstName} ${formData.lastName}`, email: formData.email, city: formData.city });
         setStep(2);
     };
 

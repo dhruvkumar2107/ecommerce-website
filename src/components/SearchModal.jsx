@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Star, ArrowRight, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { products } from '../data/products';
+import { logSearchQuery } from '../utils/analyticsLogger';
 
 const SearchModal = ({ isOpen, onClose, addToCart }) => {
     const [query, setQuery] = useState('');
@@ -17,6 +18,14 @@ const SearchModal = ({ isOpen, onClose, addToCart }) => {
         }
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, onClose]);
+
+    useEffect(() => {
+        if (!query || query.trim().length < 3) return;
+        const timer = setTimeout(() => {
+            logSearchQuery(query.trim(), filteredProducts.length);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, [query]);
 
     if (!isOpen) return null;
 

@@ -1,42 +1,90 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Clock, CheckCircle, Download, KeyRound, Lock, RefreshCw } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { 
+    Package, CheckCircle, Download, KeyRound, Lock, Trash2, 
+    Search, Mail, Users, Star, IndianRupee, Eye, AlertCircle, RefreshCw, 
+    Clock, Check, Filter
+} from 'lucide-react';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from '../firebase';
 
 const Admin = () => {
-    const [orders, setOrders] = useState([]);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'messages' | 'subscribers' | 'reviews'
+
+    // Realtime Database Data
+    const [orders, setOrders] = useState([]);
+    const [messages, setMessages] = useState([]);
+    const [subscribers, setSubscribers] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Filters & Search
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+
     useEffect(() => {
-        // Check session storage for auth state
+        // Check session storage
         const auth = sessionStorage.getItem('adminAuth');
         if (auth === 'true') {
             setIsAuthenticated(true);
         }
 
-        // Load orders from Firebase
-        const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const ordersData = snapshot.docs.map(doc => ({
+        // 1. Subscribe to Orders Collection in Firestore
+        const qOrders = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+        const unsubOrders = onSnapshot(qOrders, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
-            setOrders(ordersData);
+            setOrders(list);
             setLoading(false);
-        }, (error) => {
-            console.error("Error fetching orders:", error);
+        }, (err) => {
+            console.error("Error subscribing to orders:", err);
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        // 2. Subscribe to Contact Messages Collection in Firestore
+        const qMessages = query(collection(db, "contact_messages"), orderBy("createdAt", "desc"));
+        const unsubMessages = onSnapshot(qMessages, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setMessages(list);
+        }, (err) => console.error("Error subscribing to messages:", err));
+
+        // 3. Subscribe to Subscribers Collection in Firestore
+        const qSubscribers = query(collection(db, "subscribers"), orderBy("createdAt", "desc"));
+        const unsubSubscribers = onSnapshot(qSubscribers, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setSubscribers(list);
+        }, (err) => console.error("Error subscribing to subscribers:", err));
+
+        // 4. Subscribe to Reviews Collection in Firestore
+        const qReviews = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+        const unsubReviews = onSnapshot(qReviews, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setReviews(list);
+        }, (err) => console.error("Error subscribing to reviews:", err));
+
+        return () => {
+            unsubOrders();
+            unsubMessages();
+            unsubSubscribers();
+            unsubReviews();
+        };
     }, []);
 
     const handleLogin = (e) => {
         e.preventDefault();
-        // Simple password check - In production, this should be server-side
         if (password === 'admin123' || password === 'ayodhya') {
             setIsAuthenticated(true);
             sessionStorage.setItem('adminAuth', 'true');
@@ -51,55 +99,129 @@ const Admin = () => {
         sessionStorage.removeItem('adminAuth');
     };
 
+    // --- Order Database Operations ---
+    const handleUpdateOrderStatus = async (orderId, newStatus) => {
+        try {
+            const orderRef = doc(db, "orders", orderId);
+            await updateDoc(orderRef, {
+                status: newStatus,
+                updatedAt: new Date().toISOString()
+            });
+        } catch (err) {
+            console.error("Failed to update order status in database:", err);
+            alert("Error updating database: " + err.message);
+        }
+    };
+
+    const handleDeleteOrder = async (orderId) => {
+        if (!window.confirm("Are you sure you want to delete this order from database?")) return;
+        try {
+            await deleteDoc(doc(db, "orders", orderId));
+        } catch (err) {
+            console.error("Failed to delete order from database:", err);
+            alert("Error deleting order: " + err.message);
+        }
+    };
+
+    // --- Message Database Operations ---
+    const handleToggleMessageRead = async (messageId, currentStatus) => {
+        try {
+            const nextStatus = currentStatus === 'read' ? 'unread' : 'read';
+            await updateDoc(doc(db, "contact_messages", messageId), { status: nextStatus });
+        } catch (err) {
+            console.error("Error updating message status:", err);
+        }
+    };
+
+    const handleDeleteMessage = async (messageId) => {
+        if (!window.confirm("Delete this message from database?")) return;
+        try {
+            await deleteDoc(doc(db, "contact_messages", messageId));
+        } catch (err) {
+            console.error("Error deleting message:", err);
+        }
+    };
+
+    // --- Subscriber Database Operations ---
+    const handleDeleteSubscriber = async (subId) => {
+        if (!window.confirm("Remove subscriber from database?")) return;
+        try {
+            await deleteDoc(doc(db, "subscribers", subId));
+        } catch (err) {
+            console.error("Error deleting subscriber:", err);
+        }
+    };
+
+    // --- Review Database Operations ---
+    const handleDeleteReview = async (reviewId) => {
+        if (!window.confirm("Delete review from database?")) return;
+        try {
+            await deleteDoc(doc(db, "reviews", reviewId));
+        } catch (err) {
+            console.error("Error deleting review:", err);
+        }
+    };
+
+    // --- Export CSV ---
     const downloadCSV = () => {
         if (orders.length === 0) {
-            alert("No orders to export.");
+            alert("No orders in database to export.");
             return;
         }
 
-        // CSV Header
-        const headers = ["Order ID", "Date", "Customer Name", "Phone", "Email", "Address", "Items", "Total Amount", "Status"];
-
-        // CSV Rows
+        const headers = ["Order Ref", "Doc ID", "Date", "Customer Name", "Phone", "Email", "Address", "Items", "Payment Method", "Payment Status", "Total (INR)", "Order Status"];
         const rows = orders.map(order => [
+            order.orderNumber || order.id,
             order.id,
-            order.date.replace(/,/g, ''), // Remove commas to avoid CSV break
-            order.customer.name,
-            order.customer.phone,
-            order.customer.email,
-            `"${order.customer.address}"`, // Quote address to handle commas
-            `"${order.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}"`,
-            order.total,
-            order.status
+            order.date ? order.date.replace(/,/g, '') : '',
+            order.customer?.name || '',
+            order.customer?.phone || '',
+            order.customer?.email || '',
+            `"${order.customer?.address || ''}"`,
+            `"${(order.items || []).map(i => `${i.name} (x${i.quantity})`).join(', ')}"`,
+            order.customer?.paymentMethod || 'Online',
+            order.paymentStatus || 'Paid',
+            order.total || 0,
+            order.status || 'Order Placed'
         ]);
 
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(e => e.join(','))
-        ].join('\n');
-
-        // Create and trigger download
+        const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `agarbatti_orders_${new Date().toISOString().slice(0, 10)}.csv`);
-        link.style.visibility = 'hidden';
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", `ayodhya_database_orders_${new Date().toISOString().slice(0, 10)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
 
+    // Filtered orders calculation
+    const filteredOrders = orders.filter(order => {
+        const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
+        const query = searchQuery.toLowerCase();
+        const matchesQuery = 
+            !searchQuery ||
+            (order.orderNumber && order.orderNumber.toLowerCase().includes(query)) ||
+            (order.id && order.id.toLowerCase().includes(query)) ||
+            (order.customer?.name && order.customer.name.toLowerCase().includes(query)) ||
+            (order.customer?.email && order.customer.email.toLowerCase().includes(query)) ||
+            (order.customer?.phone && order.customer.phone.toLowerCase().includes(query));
+        return matchesStatus && matchesQuery;
+    });
+
+    const totalRevenue = orders.reduce((acc, o) => acc + (parseInt(o.total) || 0), 0);
+    const unreadMessagesCount = messages.filter(m => m.status === 'unread').length;
+
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+            <div className="min-h-screen bg-ivory flex items-center justify-center p-6 pt-32">
                 <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100 text-center">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Lock size={24} className="text-gray-500" />
+                    <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Lock size={24} className="text-gold" />
                     </div>
 
-                    <h2 className="font-heading text-2xl text-charcoal mb-2">Restricted Access</h2>
-                    <p className="text-gray-500 text-sm mb-8">Please verify your identity to access the dashboard.</p>
+                    <h2 className="font-heading text-2xl text-charcoal mb-2">Ayodhya Agarbatti Database</h2>
+                    <p className="text-gray-500 text-sm mb-8">Enter access key to view & manage database records.</p>
 
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div className="relative">
@@ -108,14 +230,14 @@ const Admin = () => {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-gold transition-colors"
-                                placeholder="Enter Access Key"
+                                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-gold transition-colors text-sm"
+                                placeholder="Enter Access Key (default: admin123)"
                             />
                         </div>
                         {error && <p className="text-red-500 text-xs font-bold">{error}</p>}
 
                         <button type="submit" className="w-full bg-charcoal text-white py-3 rounded-lg font-bold uppercase tracking-widest text-xs hover:bg-gold hover:text-charcoal transition-all">
-                            Unlock Dashboard
+                            Access Admin Database
                         </button>
                     </form>
                 </div>
@@ -124,89 +246,364 @@ const Admin = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-32 pb-12 px-6">
-            <div className="max-w-6xl mx-auto">
-                <div className="flex justify-between items-end mb-8">
+        <div className="min-h-screen bg-gray-50 pt-28 pb-16 px-4 md:px-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                     <div>
-                        <h1 className="font-heading text-3xl text-charcoal">Admin Dashboard</h1>
-                        <p className="text-gray-500">Manage your incoming orders and deliveries.</p>
+                        <div className="flex items-center gap-2">
+                            <h1 className="font-heading text-2xl md:text-3xl text-charcoal">Database Control Center</h1>
+                            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                Firestore Live
+                            </span>
+                        </div>
+                        <p className="text-gray-500 text-xs mt-1">Real-time sync enabled across orders, contacts, subscribers & reviews.</p>
                     </div>
-                    <div className="flex gap-4">
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            onClick={downloadCSV}
+                            className="bg-charcoal text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gold hover:text-charcoal transition-all flex items-center gap-2 shadow-sm"
+                        >
+                            <Download size={15} /> Export Orders CSV
+                        </button>
                         <button
                             onClick={handleLogout}
-                            className="bg-white border border-gray-200 text-red-500 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-50 transition-colors shadow-sm"
+                            className="bg-white border border-gray-300 text-red-600 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-50 transition-colors shadow-sm"
                         >
                             Logout
                         </button>
-                        <button
-                            onClick={downloadCSV}
-                            className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
-                        >
-                            <Download size={16} /> Export CSV
-                        </button>
-                        <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
-                            <span className="font-bold text-gold text-lg">{orders.length}</span> <span className="text-gray-500 text-sm">Total Orders</span>
+                    </div>
+                </div>
+
+                {/* Dashboard Metrics */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gold/10 text-gold rounded-lg flex items-center justify-center font-bold">
+                            <Package size={22} />
+                        </div>
+                        <div>
+                            <span className="text-xs text-gray-500 font-bold uppercase">Total Orders</span>
+                            <h3 className="text-2xl font-bold text-charcoal">{orders.length}</h3>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                        <div className="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center font-bold">
+                            <IndianRupee size={22} />
+                        </div>
+                        <div>
+                            <span className="text-xs text-gray-500 font-bold uppercase">Total Revenue</span>
+                            <h3 className="text-2xl font-bold text-charcoal">₹{totalRevenue.toLocaleString('en-IN')}</h3>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                        <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold relative">
+                            <Mail size={22} />
+                            {unreadMessagesCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+                                    {unreadMessagesCount}
+                                </span>
+                            )}
+                        </div>
+                        <div>
+                            <span className="text-xs text-gray-500 font-bold uppercase">Inquiries</span>
+                            <h3 className="text-2xl font-bold text-charcoal">{messages.length}</h3>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                        <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center font-bold">
+                            <Users size={22} />
+                        </div>
+                        <div>
+                            <span className="text-xs text-gray-500 font-bold uppercase">Subscribers</span>
+                            <h3 className="text-2xl font-bold text-charcoal">{subscribers.length}</h3>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    {orders.length === 0 ? (
-                        <div className="p-12 text-center text-gray-400">
-                            No orders placed yet.
+                {/* Tab Navigation */}
+                <div className="flex border-b border-gray-200 gap-2 bg-white p-2 rounded-xl shadow-sm">
+                    <button
+                        onClick={() => setActiveTab('orders')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'orders' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <Package size={16} /> Orders ({orders.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('messages')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative ${activeTab === 'messages' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <Mail size={16} /> Messages ({messages.length})
+                        {unreadMessagesCount > 0 && (
+                            <span className="bg-gold text-charcoal font-bold text-[10px] px-1.5 py-0.5 rounded-full ml-1">
+                                {unreadMessagesCount} new
+                            </span>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('subscribers')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'subscribers' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <Users size={16} /> Subscribers ({subscribers.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('reviews')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'reviews' ? 'bg-charcoal text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <Star size={16} /> Product Reviews ({reviews.length})
+                    </button>
+                </div>
+
+                {/* TAB 1: ORDERS */}
+                {activeTab === 'orders' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        
+                        {/* Search & Filter Bar */}
+                        <div className="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div className="relative w-full md:w-80">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search by customer, phone, order #..."
+                                    className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-xs focus:outline-none focus:border-gold"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-2 w-full md:w-auto">
+                                <Filter size={14} className="text-gray-400" />
+                                <span className="text-xs font-bold text-gray-500 uppercase">Status:</span>
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs font-semibold text-charcoal focus:outline-none"
+                                >
+                                    <option value="ALL">All Statuses</option>
+                                    <option value="Order Placed">Order Placed</option>
+                                    <option value="Processing">Processing</option>
+                                    <option value="Shipped">Shipped</option>
+                                    <option value="Delivered">Delivered</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="divide-y divide-gray-100">
-                            {orders.map((order) => (
-                                <div key={order.id} className="p-6 hover:bg-gray-50 transition-colors">
-                                    <div className="flex flex-col md:flex-row justify-between gap-6">
-                                        {/* Order ID & Status */}
-                                        <div className="min-w-[150px]">
-                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Order ID</span>
-                                            <h3 className="font-mono font-bold text-charcoal mt-1">{order.id}</h3>
-                                            <div className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">
-                                                <CheckCircle size={12} /> {order.status}
+
+                        {loading ? (
+                            <div className="p-12 text-center text-gray-400">Loading orders from database...</div>
+                        ) : filteredOrders.length === 0 ? (
+                            <div className="p-12 text-center text-gray-400">No matching orders found in database.</div>
+                        ) : (
+                            <div className="divide-y divide-gray-100">
+                                {filteredOrders.map((order) => (
+                                    <div key={order.id} className="p-6 hover:bg-gray-50/50 transition-colors">
+                                        <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
+                                            
+                                            {/* Column 1: Order Details */}
+                                            <div className="min-w-[200px]">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-mono font-bold text-gold">
+                                                        {order.orderNumber || `AYD-${order.id.slice(0, 6)}`}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+                                                    <Clock size={12} /> {order.date || 'Just now'}
+                                                </p>
+
+                                                <div className="mt-3">
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                                                        Database Status:
+                                                    </label>
+                                                    <select
+                                                        value={order.status || 'Order Placed'}
+                                                        onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                                                        className="bg-gray-100 border border-gray-300 rounded px-2 py-1 text-xs font-bold text-charcoal focus:outline-none focus:border-gold cursor-pointer"
+                                                    >
+                                                        <option value="Order Placed">📦 Order Placed</option>
+                                                        <option value="Processing">⚙️ Processing</option>
+                                                        <option value="Shipped">🚚 Shipped</option>
+                                                        <option value="Delivered">✅ Delivered</option>
+                                                        <option value="Cancelled">❌ Cancelled</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        {/* Customer Info */}
-                                        <div className="min-w-[200px]">
-                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</span>
-                                            <h4 className="font-bold text-charcoal mt-1">{order.customer.name}</h4>
-                                            <p className="text-xs text-gray-500 mt-1">{order.customer.email}</p>
-                                            <p className="text-xs text-gray-500">{order.customer.phone}</p>
-                                            <p className="text-xs text-gray-400 mt-2 max-w-[200px]">{order.customer.address}</p>
-                                        </div>
+                                            {/* Column 2: Customer */}
+                                            <div className="min-w-[220px]">
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Customer Details</span>
+                                                <h4 className="font-bold text-charcoal mt-1 text-sm">{order.customer?.name || 'Guest'}</h4>
+                                                <p className="text-xs text-gray-500 mt-0.5">{order.customer?.email}</p>
+                                                <p className="text-xs text-gray-500">{order.customer?.phone}</p>
+                                                <p className="text-xs text-gray-400 mt-2 max-w-xs bg-gray-50 p-2 rounded border border-gray-100">
+                                                    📍 {order.customer?.address}
+                                                </p>
+                                            </div>
 
-                                        {/* Items */}
-                                        <div className="flex-1">
-                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Items Purchased</span>
-                                            <div className="mt-2 space-y-1">
-                                                {order.items.map((item, index) => (
-                                                    <div key={index} className="flex justify-between text-sm">
-                                                        <span className="text-gray-700">{item.name} <span className="text-gray-400">x{item.quantity}</span></span>
-                                                        <span className="font-medium">₹{item.price}</span>
+                                            {/* Column 3: Items */}
+                                            <div className="flex-1">
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Items Ordered</span>
+                                                <div className="mt-2 space-y-1.5">
+                                                    {(order.items || []).map((item, idx) => (
+                                                        <div key={idx} className="flex justify-between text-xs items-center bg-gray-50/60 p-2 rounded">
+                                                            <span className="text-gray-800 font-medium">{item.name} <span className="text-gold font-bold">x{item.quantity}</span></span>
+                                                            <span className="font-bold text-charcoal">{item.price}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center text-xs">
+                                                    <span className="text-gray-500">
+                                                        Payment: <span className="font-bold text-charcoal">{order.customer?.paymentMethod || 'Online'}</span> ({order.paymentStatus || 'Paid'})
+                                                    </span>
+                                                    <div className="text-right">
+                                                        <span className="text-xs text-gray-400 block">Total Amount</span>
+                                                        <span className="font-bold text-gold text-base">₹{order.total}</span>
                                                     </div>
-                                                ))}
+                                                </div>
                                             </div>
-                                            <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                                <span className="font-bold text-sm">Total Paid</span>
-                                                <span className="font-bold text-gold text-lg">₹{order.total}</span>
-                                            </div>
-                                        </div>
 
-                                        {/* Actions */}
-                                        <div className="flex flex-col justify-center min-w-[150px]">
-                                            <button className="bg-charcoal text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gold hover:text-charcoal transition-colors flex items-center justify-center gap-2">
-                                                <Package size={16} /> Ship Order
-                                            </button>
+                                            {/* Column 4: Delete */}
+                                            <div className="flex items-center lg:self-center">
+                                                <button
+                                                    onClick={() => handleDeleteOrder(order.id)}
+                                                    className="text-gray-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                                                    title="Delete order from database"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+
                                         </div>
                                     </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* TAB 2: CONTACT MESSAGES */}
+                {activeTab === 'messages' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        {messages.length === 0 ? (
+                            <div className="p-12 text-center text-gray-400">No contact messages saved in database yet.</div>
+                        ) : (
+                            <div className="divide-y divide-gray-100">
+                                {messages.map((msg) => (
+                                    <div key={msg.id} className={`p-6 transition-colors ${msg.status === 'unread' ? 'bg-blue-50/30' : 'bg-white'}`}>
+                                        <div className="flex justify-between items-start gap-4">
+                                            <div>
+                                                <div className="flex items-center gap-3">
+                                                    <h3 className="font-bold text-charcoal text-base">{msg.name}</h3>
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${msg.status === 'unread' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                        {msg.status === 'unread' ? 'New Message' : 'Read'}
+                                                    </span>
+                                                    <span className="text-xs text-gold font-semibold uppercase">{msg.subject}</span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1">{msg.email} • {msg.date || 'Recent'}</p>
+                                                <p className="text-sm text-gray-700 mt-3 p-4 bg-gray-50 rounded-lg border border-gray-100 leading-relaxed">
+                                                    "{msg.message}"
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <button
+                                                    onClick={() => handleToggleMessageRead(msg.id, msg.status)}
+                                                    className="px-3 py-1.5 rounded-lg border text-xs font-bold hover:bg-gray-100 transition-colors"
+                                                >
+                                                    {msg.status === 'unread' ? 'Mark Read' : 'Mark Unread'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteMessage(msg.id)}
+                                                    className="text-gray-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                                                    title="Delete message from database"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* TAB 3: SUBSCRIBERS */}
+                {activeTab === 'subscribers' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
+                        {subscribers.length === 0 ? (
+                            <div className="p-12 text-center text-gray-400">No newsletter subscribers in database yet.</div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                                    <h3 className="font-heading text-lg text-charcoal">Subscribed Emails</h3>
+                                    <span className="text-xs font-bold text-gold uppercase">{subscribers.length} total subscribers</span>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                                <div className="divide-y divide-gray-100">
+                                    {subscribers.map((sub) => (
+                                        <div key={sub.id} className="py-3 flex justify-between items-center text-sm">
+                                            <div>
+                                                <span className="font-bold text-charcoal">{sub.email}</span>
+                                                <span className="text-xs text-gray-400 ml-4">Subscribed: {sub.subscribedAt || 'Recent'}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteSubscriber(sub.id)}
+                                                className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                                title="Remove subscriber from database"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* TAB 4: REVIEWS */}
+                {activeTab === 'reviews' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        {reviews.length === 0 ? (
+                            <div className="p-12 text-center text-gray-400">No user reviews saved in database yet.</div>
+                        ) : (
+                            <div className="divide-y divide-gray-100">
+                                {reviews.map((rev) => (
+                                    <div key={rev.id} className="p-6 flex justify-between items-start gap-4">
+                                        <div>
+                                            <div className="flex items-center gap-3">
+                                                <h4 className="font-bold text-charcoal">{rev.name}</h4>
+                                                <div className="flex text-gold">
+                                                    {[...Array(rev.rating || 5)].map((_, i) => (
+                                                        <Star key={i} size={14} fill="currentColor" />
+                                                    ))}
+                                                </div>
+                                                <span className="text-xs font-bold text-gray-400">Product: {rev.productName || rev.productSlug || 'Incense'}</span>
+                                            </div>
+                                            <p className="text-xs text-gray-400 mt-1">{rev.date || 'Verified Buyer'}</p>
+                                            <p className="text-sm text-gray-700 mt-2 font-body italic bg-gray-50 p-3 rounded border border-gray-100">
+                                                "{rev.comment}"
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            onClick={() => handleDeleteReview(rev.id)}
+                                            className="text-gray-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors shrink-0"
+                                            title="Delete review from database"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
             </div>
         </div>
     );

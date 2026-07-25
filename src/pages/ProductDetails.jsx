@@ -6,6 +6,8 @@ import {
     Check, ShoppingBag, Info, Heart, Share2, HelpCircle, UserCheck,
     ChevronLeft, ChevronRight 
 } from 'lucide-react';
+import { collection, addDoc, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 import { products } from '../data/products';
 
 const ProductDetails = ({ addToCart }) => {
@@ -23,7 +25,22 @@ const ProductDetails = ({ addToCart }) => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, [id]);
+        
+        // Fetch product reviews live from Firestore database
+        const q = query(collection(db, "reviews"), where("productId", "==", product.id));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const dbReviews = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            // Merge static default reviews with live database reviews
+            setUserReviews([...dbReviews, ...(product.reviews || [])]);
+        }, (err) => {
+            console.error("Error fetching product reviews from database:", err);
+        });
+
+        return () => unsubscribe();
+    }, [id, product.id]);
 
     const currentPrice = product.packOptions?.[selectedPack]?.price || product.numericPrice;
     const totalPrice = currentPrice * quantity;
@@ -40,21 +57,31 @@ const ProductDetails = ({ addToCart }) => {
         setTimeout(() => setAddedToast(false), 2500);
     };
 
-    const handleReviewSubmit = (e) => {
+    const handleReviewSubmit = async (e) => {
         e.preventDefault();
         if (!reviewForm.name || !reviewForm.comment) return;
-        const newReview = {
-            id: Date.now(),
-            name: reviewForm.name,
-            location: "Verified Buyer",
-            rating: reviewForm.rating,
-            date: new Date().toISOString().slice(0, 10),
-            comment: reviewForm.comment
-        };
-        setUserReviews([newReview, ...userReviews]);
-        setReviewForm({ name: '', rating: 5, comment: '' });
-        setReviewSuccess(true);
-        setTimeout(() => setReviewSuccess(false), 3000);
+        
+        try {
+            const newReview = {
+                productId: product.id,
+                productSlug: product.slug,
+                productName: product.name,
+                name: reviewForm.name,
+                location: "Verified Purchaser",
+                rating: reviewForm.rating,
+                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+                comment: reviewForm.comment,
+                createdAt: serverTimestamp()
+            };
+            
+            await addDoc(collection(db, "reviews"), newReview);
+            setReviewForm({ name: '', rating: 5, comment: '' });
+            setReviewSuccess(true);
+            setTimeout(() => setReviewSuccess(false), 3000);
+        } catch (err) {
+            console.error("Error saving review to database:", err);
+            alert("Failed to save review to database. Please check your connection.");
+        }
     };
 
     // Related products (excluding current)

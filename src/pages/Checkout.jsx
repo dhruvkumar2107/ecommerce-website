@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, MapPin, Lock, CreditCard, Banknote, CheckCircle, ShieldCheck, Truck, Check } from 'lucide-react';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+
+const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+        if (window.Razorpay) {
+            resolve(true);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
 
 const Steps = ({ currentStep }) => {
     const steps = [
@@ -36,6 +50,10 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
     const [paymentMethod, setPaymentMethod] = useState('razorpay');
     const [isProcessing, setIsProcessing] = useState(false);
 
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }, [step]);
+
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -63,54 +81,95 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
 
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
+        const orderNumber = `AYD-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
+        
         try {
             if (paymentMethod === 'cod') {
-                // COD Logic
                 const newOrder = {
+                    orderNumber: orderNumber,
                     customer: {
-                        name: `${formData.firstName} ${formData.lastName}`,
+                        name: `${formData.firstName} ${formData.lastName}`.trim(),
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
                         address: `${formData.addres}, ${formData.city} - ${formData.pincode}`,
+                        street: formData.addres,
+                        city: formData.city,
+                        pincode: formData.pincode,
                         phone: formData.phone,
                         email: formData.email,
                         paymentMethod: 'Cash on Delivery'
                     },
-                    items: cartItems,
+                    items: cartItems.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        variant: item.variant || '',
+                        price: item.price,
+                        quantity: item.quantity,
+                        image: item.image || ''
+                    })),
+                    subtotal: total,
+                    shipping: 0,
                     total: total,
-                    date: new Date().toISOString(),
-                    status: "Pending (COD)",
-                    createdAt: new Date()
+                    paymentId: 'COD',
+                    paymentStatus: 'Pending COD',
+                    status: 'Order Placed',
+                    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                    createdAt: serverTimestamp()
                 };
                 await saveAndRedirect(newOrder);
             } else {
-                // Razorpay Logic
+                // Razorpay Logic - Ensure Razorpay script loaded
+                const res = await loadRazorpayScript();
+                if (!res || typeof window.Razorpay === 'undefined') {
+                    alert('Razorpay Payment Gateway failed to load. Please check your internet connection.');
+                    setIsProcessing(false);
+                    return;
+                }
+
                 const options = {
                     key: "rzp_test_RqBKFFolwTFZtE",
                     amount: total * 100,
                     currency: "INR",
                     name: "Ayodhya Agarbatti",
-                    description: "Sacred Fragrances",
+                    description: "Sacred Fragrances Order",
                     image: "/images/ayodhya_logo.png",
                     handler: async function (response) {
                         try {
                             const newOrder = {
-                                paymentId: response.razorpay_payment_id,
+                                orderNumber: orderNumber,
+                                paymentId: response.razorpay_payment_id || 'RZP-ONLINE',
                                 customer: {
-                                    name: `${formData.firstName} ${formData.lastName}`,
+                                    name: `${formData.firstName} ${formData.lastName}`.trim(),
+                                    firstName: formData.firstName,
+                                    lastName: formData.lastName,
                                     address: `${formData.addres}, ${formData.city} - ${formData.pincode}`,
+                                    street: formData.addres,
+                                    city: formData.city,
+                                    pincode: formData.pincode,
                                     phone: formData.phone,
                                     email: formData.email,
                                     paymentMethod: 'Razorpay Online'
                                 },
-                                items: cartItems,
+                                items: cartItems.map(item => ({
+                                    id: item.id,
+                                    name: item.name,
+                                    variant: item.variant || '',
+                                    price: item.price,
+                                    quantity: item.quantity,
+                                    image: item.image || ''
+                                })),
+                                subtotal: total,
+                                shipping: 0,
                                 total: total,
-                                date: new Date().toISOString(),
-                                status: "Paid",
-                                createdAt: new Date()
+                                paymentStatus: 'Paid',
+                                status: 'Order Placed',
+                                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                                createdAt: serverTimestamp()
                             };
                             await saveAndRedirect(newOrder);
                         } catch (error) {
                             console.error("Error saving razorpay order:", error);
-                            alert("Payment successful but failed to save order. Please contact support.");
+                            alert("Payment completed but failed to write order to database. Please contact support.");
                             setIsProcessing(false);
                         }
                     },
@@ -129,32 +188,35 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
                     }
                 };
                 const rzp1 = new window.Razorpay(options);
+                rzp1.on('payment.failed', function (response) {
+                    alert('Payment Failed: ' + (response.error.description || 'Transaction unsuccessful'));
+                    setIsProcessing(false);
+                });
                 rzp1.open();
             }
         } catch (error) {
             console.error("Order processing failed:", error);
             setIsProcessing(false);
-            alert("Something went wrong. Please try again.");
+            alert("Order placement error: " + (error.message || "Please check internet connection"));
         }
     };
 
     const saveAndRedirect = async (orderData) => {
         try {
-            // Save to Firebase
+            // Save order into Firestore Database ("orders" collection)
             const docRef = await addDoc(collection(db, "orders"), orderData);
-            console.log("Order written with ID: ", docRef.id);
+            console.log("Order saved to database with Document ID:", docRef.id);
 
-            // Add the generated ID to the order object for the success page
             const finalOrder = { ...orderData, id: docRef.id };
 
-            // Clear Cart
+            // Clear Cart after successful database write
             onClearCart();
 
-            // Redirect
+            // Redirect to Success Page
             navigate("/success", { state: { order: finalOrder } });
         } catch (e) {
-            console.error("Error adding document: ", e);
-            alert("Failed to place order. Check your internet connection or Firebase config.");
+            console.error("Error writing order to Firestore database: ", e);
+            alert("Could not write order to database. Error: " + e.message);
             setIsProcessing(false);
         }
     };

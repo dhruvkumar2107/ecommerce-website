@@ -1,8 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Linkedin } from 'lucide-react';
+import { Instagram, Linkedin, Check } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const Footer = () => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState({ loading: false, success: false, error: '' });
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email || !email.includes('@')) return;
+
+        setStatus({ loading: true, success: false, error: '' });
+        try {
+            await addDoc(collection(db, "subscribers"), {
+                email: email.trim(),
+                subscribedAt: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+                createdAt: serverTimestamp()
+            });
+            setStatus({ loading: false, success: true, error: '' });
+            setEmail('');
+        } catch (err) {
+            console.error("Error subscribing email to database:", err);
+            setStatus({ loading: false, success: false, error: 'Failed to subscribe. Please try again.' });
+        }
+    };
     return (
         <footer className="bg-charcoal text-ivory pt-20 pb-10 border-t border-gold/10">
             <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
@@ -67,14 +90,30 @@ const Footer = () => {
                 <div className="col-span-1">
                     <h4 className="font-heading text-xs font-bold uppercase tracking-[0.2em] mb-8 text-gray-500">Newsletter</h4>
                     <p className="text-gray-400 text-sm mb-6">Join our circle. Receive ritual guides and exclusive launches.</p>
-                    <form onSubmit={(e) => e.preventDefault()} className="flex border-b border-gold/30 pb-2">
-                        <input
-                            type="email"
-                            placeholder="Email Address"
-                            className="bg-transparent border-none outline-none text-white w-full placeholder-gray-500 text-sm"
-                        />
-                        <button type="submit" className="text-xs uppercase tracking-widest text-gold hover:text-white transition-colors">Join</button>
-                    </form>
+                    {status.success ? (
+                        <div className="flex items-center gap-2 text-gold text-xs font-semibold py-2">
+                            <Check size={16} /> Subscribed to database successfully!
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSubscribe} className="flex border-b border-gold/30 pb-2">
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Email Address"
+                                className="bg-transparent border-none outline-none text-white w-full placeholder-gray-500 text-sm"
+                            />
+                            <button
+                                type="submit"
+                                disabled={status.loading}
+                                className="text-xs uppercase tracking-widest text-gold hover:text-white transition-colors disabled:opacity-50"
+                            >
+                                {status.loading ? 'Saving...' : 'Join'}
+                            </button>
+                        </form>
+                    )}
+                    {status.error && <p className="text-red-400 text-xs mt-2">{status.error}</p>}
                 </div>
 
             </div>

@@ -57,10 +57,10 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
         logCheckoutStep(step, stepNames[step] || 'Checkout', { total, itemCount: cartItems.length });
     }, [step]);
 
-    const [formData, setFormData, setFormData] = useState({
+    const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
-        addresss: '',
+        address: '',
         city: '',
         pincode: '',
         phone: '',
@@ -289,7 +289,7 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Street Address</label>
-                                            <input required type="text" name="addresss" value={formData.addresss} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="House No, Street Name" />
+                                            <input required type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="House No, Street Name" />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                             <div>

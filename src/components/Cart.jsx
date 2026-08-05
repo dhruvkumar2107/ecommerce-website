@@ -7,10 +7,10 @@ import { useTranslation } from 'react-i18next';
 const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
     const { t } = useTranslation();
 
-    // Parse price string (e.g. "₹450") to integer (450)
+    // Parse price string (e.g. "₹299") to integer (299)
     const total = items.reduce((acc, item) => {
-        const price = parseInt(item.price.replace(/[^0-9]/g, ''));
-        return acc + (price * item.quantity);
+        const priceNum = item.numericPrice || parseInt(String(item.price || '0').replace(/[^0-9]/g, '')) || 299;
+        return acc + (priceNum * item.quantity);
     }, 0);
 
     const navigate = useNavigate();
@@ -54,22 +54,25 @@ const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
                             <button onClick={onClose} className="text-gold text-sm hover:underline font-bold uppercase tracking-wide">{t('continueShopping')}</button>
                         </div>
                     ) : (
-                        items.map((item) => (
-                            <div key={item.id} className="flex gap-4">
-                                <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0 border border-charcoal/5">
-                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <h4 className="font-heading text-charcoal text-lg">{item.name}</h4>
-                                        <button
-                                            onClick={() => onRemove(item.id)}
-                                            className="text-gray-400 hover:text-terracotta transition-colors"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
+                        items.map((item) => {
+                            const imageSrc = item.image || (item.images && item.images[0]) || '/images/ayodhya_logo.png';
+                            const displayPrice = item.price || (item.numericPrice ? `₹${item.numericPrice}` : '₹299');
+                            return (
+                                <div key={item.id} className="flex gap-4">
+                                    <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0 border border-charcoal/5">
+                                        <img src={imageSrc} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
                                     </div>
-                                    <p className="text-gray-500 text-sm mt-1">{item.price}</p>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <h4 className="font-heading text-charcoal text-lg">{item.name}</h4>
+                                            <button
+                                                onClick={() => onRemove(item.id)}
+                                                className="text-gray-400 hover:text-terracotta transition-colors"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                        <p className="text-gray-500 text-sm mt-1">{displayPrice}</p>
 
                                     <div className="flex items-center gap-3 mt-3">
                                         <div className="flex items-center border border-charcoal/10 rounded-md bg-white">
@@ -92,8 +95,9 @@ const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
                                     </div>
                                 </div>
                             </div>
-                        ))
-                    )}
+                        );
+                    })
+                )}
                 </div>
 
                 <div className="border-t border-charcoal/5 pt-6 mt-auto bg-ivory">

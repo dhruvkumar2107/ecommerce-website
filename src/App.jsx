@@ -37,9 +37,13 @@ const TopBar = () => {
         localStorage.setItem('ayodhya_lang', lng);
     };
 
+    const currentLang = i18n.language || 'en';
+    const isEn = currentLang.startsWith('en');
+    const isHi = currentLang.startsWith('hi');
+
     return (
-        <div className="bg-charcoal text-ivory text-[10px] font-bold tracking-[0.2em] text-center py-2 uppercase border-b border-white/10 flex items-center justify-between px-4 md:px-8">
-                {/* Spacer to balance the language selector */}
+        <div className="bg-charcoal text-ivory text-[10px] font-bold tracking-[0.2em] text-center py-2 uppercase border-b border-white/10 flex items-center justify-between px-4 md:px-8 relative z-[60]">
+            {/* Spacer to balance the language selector */}
             <div className="shrink-0 invisible px-2.5 py-1 text-[9px]" aria-hidden="true">EN | हिंदी</div>
 
             <div className="flex-1 flex items-center justify-center">
@@ -47,18 +51,26 @@ const TopBar = () => {
             </div>
 
             {/* i18n Language Selector */}
-            <div className="flex items-center gap-1.5 shrink-0 bg-white/10 px-2.5 py-1 rounded-full border border-white/10 text-[9px]">
+            <div className="flex items-center gap-1.5 shrink-0 bg-white/10 px-2.5 py-1 rounded-full border border-white/10 text-[9px] relative z-10">
                 <Globe size={11} className="text-gold" />
                 <button
-                    onClick={() => changeLanguage('en')}
-                    className={`px-1.5 py-0.5 rounded transition-colors ${i18n.language === 'en' ? 'bg-gold text-charcoal font-black' : 'text-white/70 hover:text-white'}`}
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        changeLanguage('en');
+                    }}
+                    className={`px-1.5 py-0.5 rounded transition-colors cursor-pointer ${isEn ? 'bg-gold text-charcoal font-black' : 'text-white/70 hover:text-white'}`}
                 >
                     EN
                 </button>
                 <span className="text-white/30">|</span>
                 <button
-                    onClick={() => changeLanguage('hi')}
-                    className={`px-1.5 py-0.5 rounded transition-colors ${i18n.language === 'hi' ? 'bg-gold text-charcoal font-black' : 'text-white/70 hover:text-white'}`}
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        changeLanguage('hi');
+                    }}
+                    className={`px-1.5 py-0.5 rounded transition-colors cursor-pointer ${isHi ? 'bg-gold text-charcoal font-black' : 'text-white/70 hover:text-white'}`}
                 >
                     हिंदी
                 </button>
@@ -84,10 +96,27 @@ function AppContent() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-    // Initialize Cart from LocalStorage
+    // Initialize Cart from LocalStorage & sanitize prices/images
     const [cartItems, setCartItems] = useState(() => {
         const saved = localStorage.getItem('cartItems');
-        return saved ? JSON.parse(saved) : [];
+        if (!saved) return [];
+        try {
+            const parsed = JSON.parse(saved);
+            return parsed.map(item => {
+                const matchedProduct = products.find(p => p.id === item.id);
+                const numericPrice = matchedProduct?.numericPrice || item.numericPrice || 299;
+                const priceStr = matchedProduct?.price || item.price || `₹${numericPrice}`;
+                const imageSrc = item.image || matchedProduct?.images?.[0] || item.images?.[0] || '/images/ayodhya_logo.png';
+                return {
+                    ...item,
+                    price: priceStr,
+                    numericPrice: numericPrice,
+                    image: imageSrc
+                };
+            });
+        } catch {
+            return [];
+        }
     });
 
     useEffect(() => {
@@ -104,7 +133,7 @@ function AppContent() {
 
     const calculateCartTotal = (items) => {
         return items.reduce((acc, item) => {
-            const priceNum = parseInt(String(item.price || '0').replace(/[^0-9]/g, '')) || 0;
+            const priceNum = item.numericPrice || parseInt(String(item.price || '0').replace(/[^0-9]/g, '')) || 299;
             return acc + priceNum * (item.quantity || 1);
         }, 0);
     };
@@ -113,21 +142,36 @@ function AppContent() {
 
     const addToCart = (product) => {
         setCartItems(prev => {
+            const imageSrc = product.image || (product.images && product.images[0]) || '/images/ayodhya_logo.png';
+            const priceStr = product.price || (product.numericPrice ? `₹${product.numericPrice}` : '₹299');
+            const numericPrice = product.numericPrice || parseInt(String(priceStr).replace(/[^0-9]/g, '')) || 299;
+
+            const itemWithDefaults = {
+                ...product,
+                image: imageSrc,
+                price: priceStr,
+                numericPrice: numericPrice
+            };
+
             const existing = prev.find(item => item.id === product.id);
             let nextItems;
             if (existing) {
                 nextItems = prev.map(item =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + (product.quantity || 1) } : item
+                    item.id === product.id ? { 
+                        ...item, 
+                        ...itemWithDefaults, 
+                        quantity: item.quantity + (product.quantity || 1) 
+                    } : item
                 );
             } else {
-                nextItems = [...prev, { ...product, quantity: product.quantity || 1 }];
+                nextItems = [...prev, { ...itemWithDefaults, quantity: product.quantity || 1 }];
             }
 
             // Log detailed minute cart addition event to database & GA4
             const cartTotal = calculateCartTotal(nextItems);
             const totalCount = nextItems.reduce((acc, i) => acc + i.quantity, 0);
-            logCartAction('ADD_TO_CART', product, cartTotal, totalCount);
-            trackAddToCart(product, product.quantity || 1);
+            logCartAction('ADD_TO_CART', itemWithDefaults, cartTotal, totalCount);
+            trackAddToCart(itemWithDefaults, product.quantity || 1);
 
             return nextItems;
         });
@@ -183,12 +227,14 @@ function AppContent() {
 
                 <CustomCursor />
                 <div className="noise-overlay"></div>
-                <TopBar />
-                <Navbar
-                    cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
-                    onCartClick={toggleCart}
-                    onSearchClick={() => setIsSearchOpen(true)}
-                />
+                <header className="sticky top-0 z-50 w-full">
+                    <TopBar />
+                    <Navbar
+                        cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+                        onCartClick={toggleCart}
+                        onSearchClick={() => setIsSearchOpen(true)}
+                    />
+                </header>
 
                 <main className="flex-grow">
                     <Routes>

@@ -49,7 +49,7 @@ const Navbar = ({ cartCount, onCartClick, onSearchClick }) => {
     ];
 
     return (
-        <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${navClass}`}>
+        <nav className={`relative w-full z-40 transition-all duration-500 ease-in-out ${navClass}`}>
             {scrolled && <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>}
 
             <div className="container mx-auto px-6 flex justify-between items-center relative z-10">

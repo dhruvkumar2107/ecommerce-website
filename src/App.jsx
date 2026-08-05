@@ -227,7 +227,7 @@ function AppContent() {
 
                 <CustomCursor />
                 <div className="noise-overlay"></div>
-                <header className="sticky top-0 z-50 w-full">
+                <header className="fixed top-0 left-0 right-0 z-50 w-full pointer-events-auto">
                     <TopBar />
                     <Navbar
                         cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}

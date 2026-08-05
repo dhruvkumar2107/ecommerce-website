@@ -36,7 +36,7 @@ const Navbar = ({ cartCount, onCartClick, onSearchClick }) => {
 
     const navClass = scrolled
         ? "bg-charcoal/95 backdrop-blur-md shadow-xl py-3 border-b border-gold/20"
-        : "bg-transparent py-5";
+        : "bg-gradient-to-b from-charcoal/70 to-transparent py-4";
 
     const textClass = "text-ivory";
 

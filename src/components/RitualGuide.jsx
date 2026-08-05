@@ -1,7 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const RitualGuide = () => {
+    const { t } = useTranslation();
+
     return (
         <section className="py-32 bg-ivory text-charcoal relative overflow-hidden">
             <div className="absolute inset-0 bg-gold/5"></div>
@@ -10,26 +13,26 @@ const RitualGuide = () => {
 
                 {/* Text Content */}
                 <div className="w-full md:w-1/2">
-                    <span className="font-heading text-xs uppercase tracking-[0.3em] text-gold mb-6 block">The Experience</span>
+                    <span className="font-heading text-xs uppercase tracking-[0.3em] text-gold mb-6 block">{t('theExperience')}</span>
                     <h2 className="font-serif text-4xl md:text-6xl leading-tight mb-8">
-                        Elevate the <br /><span className="italic">Everyday</span>
+                        {t('elevateHeading1')} <br /><span className="italic">{t('elevateHeading2')}</span>
                     </h2>
                     <p className="font-body text-charcoal/80 text-lg leading-relaxed mb-12">
-                        In a world of noise, the lighting of incense is a radical act of slowing down. It is a signal to the brain that the hustle has ceased, and the sanctuary is open.
+                        {t('ritualDesc')}
                     </p>
 
                     <div className="space-y-8 border-l border-charcoal/10 pl-8">
                         <div>
-                            <h4 className="font-heading text-xs uppercase tracking-widest text-charcoal mb-2">01. Intention</h4>
-                            <p className="text-charcoal/60 text-sm">Hold the stick for a moment before lighting. Set a silent intention for your space.</p>
+                            <h4 className="font-heading text-xs uppercase tracking-widest text-charcoal mb-2">{t('step1Title')}</h4>
+                            <p className="text-charcoal/60 text-sm">{t('step1Desc')}</p>
                         </div>
                         <div>
-                            <h4 className="font-heading text-xs uppercase tracking-widest text-charcoal mb-2">02. Ignition</h4>
-                            <p className="text-charcoal/60 text-sm">Light the tip. Allow the flame to dance for 5 seconds before gently blowing it out.</p>
+                            <h4 className="font-heading text-xs uppercase tracking-widest text-charcoal mb-2">{t('step2Title')}</h4>
+                            <p className="text-charcoal/60 text-sm">{t('step2Desc')}</p>
                         </div>
                         <div>
-                            <h4 className="font-heading text-xs uppercase tracking-widest text-charcoal mb-2">03. Transformation</h4>
-                            <p className="text-charcoal/60 text-sm">Place in a holder specifically designed for ash collection. Breathe deep as the smoke rises.</p>
+                            <h4 className="font-heading text-xs uppercase tracking-widest text-charcoal mb-2">{t('step3Title')}</h4>
+                            <p className="text-charcoal/60 text-sm">{t('step3Desc')}</p>
                         </div>
                     </div>
                 </div>

@@ -2,8 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
+    const { t } = useTranslation();
+
     // Parse price string (e.g. "₹450") to integer (450)
     const total = items.reduce((acc, item) => {
         const price = parseInt(item.price.replace(/[^0-9]/g, ''));
@@ -35,8 +38,8 @@ const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
             >
                 <div className="flex justify-between items-center mb-8 pb-4 border-b border-charcoal/5">
                     <div className="flex items-center gap-3">
-                        <h2 className="font-heading text-2xl text-charcoal">Your Bag</h2>
-                        <span className="bg-charcoal/5 text-charcoal text-[10px] px-2 py-1 rounded-full font-bold">{items.length} items</span>
+                        <h2 className="font-heading text-2xl text-charcoal">{t('yourBag')}</h2>
+                        <span className="bg-charcoal/5 text-charcoal text-[10px] px-2 py-1 rounded-full font-bold">{items.length} {t('items')}</span>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gold transition-colors">
                         <X size={24} />
@@ -47,8 +50,8 @@ const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
                     {items.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center space-y-4 text-gray-400">
                             <div className="w-16 h-1 bg-charcoal/10 rounded-full"></div>
-                            <p className="font-display text-charcoal/60">Your soul is waiting for a scent...</p>
-                            <button onClick={onClose} className="text-gold text-sm hover:underline font-bold uppercase tracking-wide">Continue Shopping</button>
+                            <p className="font-display text-charcoal/60">{t('soulWaiting')}</p>
+                            <button onClick={onClose} className="text-gold text-sm hover:underline font-bold uppercase tracking-wide">{t('continueShopping')}</button>
                         </div>
                     ) : (
                         items.map((item) => (
@@ -95,7 +98,7 @@ const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
 
                 <div className="border-t border-charcoal/5 pt-6 mt-auto bg-ivory">
                     <div className="flex justify-between items-center mb-6">
-                        <span className="font-display text-gray-500 uppercase tracking-widest text-xs">Total Estimate</span>
+                        <span className="font-display text-gray-500 uppercase tracking-widest text-xs">{t('totalEstimate')}</span>
                         <span className="font-heading text-2xl text-charcoal">₹{total}</span>
                     </div>
                     <button
@@ -103,7 +106,7 @@ const Cart = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
                         disabled={items.length === 0}
                         className="w-full btn-premium bg-charcoal text-white hover:bg-gold hover:text-white transition-colors py-4 font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                     >
-                        Proceed to Checkout
+                        {t('proceedToCheckout')}
                     </button>
                 </div>
             </motion.div>

@@ -131,7 +131,7 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
                 }
 
                 const options = {
-                    key: "rzp_test_RqBKFFolwTFZtE",
+                    key: "rzp_live_SVqG1GXacFfPNP",
                     amount: total * 100,
                     currency: "INR",
                     name: "Ayodhya Agarbatti",
@@ -267,7 +267,7 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
                         <AnimatePresence mode="wait">
                             {step === 1 && (
                                 <motion.div
-                                    key="addresss"
+                                    key="address"
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
@@ -276,7 +276,7 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
                                     <h2 className="font-heading text-xl mb-6 flex items-center gap-2">
                                         <MapPin className="text-gold" size={20} /> Shipping Address
                                     </h2>
-                                    <form id="addresss-form" onSubmit={nextStep} className="space-y-5 sm:space-y-6">
+                                    <form id="address-form" onSubmit={nextStep} className="space-y-5 sm:space-y-6">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">First Name</label>
@@ -308,7 +308,7 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
                                             </div>
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Email</label>
-                                                <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="email@addresss.com" />
+                                                <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-3.5 sm:p-4 rounded-lg focus:outline-none focus:border-gold transition-colors text-base sm:text-sm" placeholder="email@address.com" />
                                             </div>
                                         </div>
                                         <button type="submit" className="w-full bg-charcoal text-white py-4 rounded-lg font-bold uppercase tracking-widest hover:bg-gold hover:text-charcoal transition-all mt-4 text-xs sm:text-sm">

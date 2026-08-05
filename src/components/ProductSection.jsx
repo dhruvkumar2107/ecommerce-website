@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingBag, Eye, Sparkles, Filter, CheckCircle, ShieldCheck, Flame } from 'lucide-react';
 import { products, categories } from '../data/products';
+import { useTranslation } from 'react-i18next';
 
 const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
+    const { t } = useTranslation();
     const [selectedCategory, setSelectedCategory] = useState("All Incense");
     const [sortBy, setSortBy] = useState("featured");
     const [quickViewProduct, setQuickViewProduct] = useState(null);
@@ -41,7 +43,7 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                     >
                         <CheckCircle className="text-gold w-6 h-6 shrink-0" />
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-gold">Added to Sanctuary Bag</p>
+                            <p className="text-xs font-bold uppercase tracking-wider text-gold">{t('addedToSanctuary')}</p>
                             <p className="text-sm font-serif">{addedToast}</p>
                         </div>
                     </motion.div>
@@ -53,11 +55,11 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
                     <div>
                         <span className="font-heading text-xs font-bold tracking-[0.3em] text-gold uppercase mb-3 block flex items-center gap-2">
-                            <Sparkles size={14} /> The Royal Collection
+                            <Sparkles size={14} /> {t('royalCollection')}
                         </span>
                         <h2 className={`font-serif text-4xl md:text-6xl leading-tight ${isStandaloneShop ? 'text-charcoal' : 'text-ivory'}`}>
-                            Sacred Fragrances <br />
-                            <span className="italic font-light opacity-80">Hand-Rolled in Ayodhya</span>
+                            {t('sacredFragrances')} <br />
+                            <span className="italic font-light opacity-80">{t('handRolled')}</span>
                         </h2>
                     </div>
 
@@ -70,10 +72,10 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                                 onChange={(e) => setSortBy(e.target.value)}
                                 className="bg-transparent text-xs uppercase tracking-wider font-bold text-charcoal outline-none cursor-pointer"
                             >
-                                <option value="featured" className="bg-charcoal text-white">Featured</option>
-                                <option value="price-low" className="bg-charcoal text-white">Price: Low to High</option>
-                                <option value="price-high" className="bg-charcoal text-white">Price: High to Low</option>
-                                <option value="rating" className="bg-charcoal text-white">Highest Rated</option>
+                                <option value="featured" className="bg-charcoal text-white">{t('sortFeatured')}</option>
+                                <option value="price-low" className="bg-charcoal text-white">{t('sortPriceLow')}</option>
+                                <option value="price-high" className="bg-charcoal text-white">{t('sortPriceHigh')}</option>
+                                <option value="rating" className="bg-charcoal text-white">{t('sortRating')}</option>
                             </select>
                         </div>
                     </div>
@@ -176,11 +178,11 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                                     {/* Pyramid summary */}
                                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-[11px] mb-4 space-y-1">
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400 font-bold uppercase text-[9px]">Top Note:</span>
+                                            <span className="text-gray-400 font-bold uppercase text-[9px]">{t('topNote')}</span>
                                             <span className="font-medium text-gray-700 truncate max-w-[180px]">{product.pyramid.top}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400 font-bold uppercase text-[9px]">Base Note:</span>
+                                            <span className="text-gray-400 font-bold uppercase text-[9px]">{t('baseNote')}</span>
                                             <span className="font-medium text-gray-700 truncate max-w-[180px]">{product.pyramid.base}</span>
                                         </div>
                                     </div>
@@ -191,7 +193,7 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                                     <div className="flex items-baseline gap-2 mb-4">
                                         <span className="font-serif text-2xl font-bold text-charcoal">{product.price}</span>
                                         <span className="text-sm text-gray-400 line-through">{product.originalPrice}</span>
-                                        <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">Tax Included</span>
+                                        <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">{t('taxIncluded')}</span>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">
@@ -199,13 +201,13 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                                             onClick={(e) => handleAddToCart(product, e)}
                                             className="bg-charcoal text-white hover:bg-gold hover:text-charcoal font-bold uppercase tracking-widest text-[11px] py-3.5 px-4 rounded-lg transition-all shadow-md flex items-center justify-center gap-2"
                                         >
-                                            <ShoppingBag size={14} /> Quick Add
+                                            <ShoppingBag size={14} /> {t('quickAdd')}
                                         </button>
                                         <Link
                                             to={`/product/${product.id}`}
                                             className="border border-charcoal/20 text-charcoal hover:border-gold hover:text-gold font-bold uppercase tracking-widest text-[11px] py-3.5 px-4 rounded-lg transition-all text-center block"
                                         >
-                                            View Ritual
+                                            {t('viewRitual')}
                                         </Link>
                                     </div>
                                 </div>
@@ -251,11 +253,11 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                                 </p>
 
                                 <div className="space-y-2 mb-6">
-                                    <div className="text-xs font-bold uppercase tracking-wider text-gray-400">Fragrance Pyramid</div>
+                                    <div className="text-xs font-bold uppercase tracking-wider text-gray-400">{t('fragrancePyramid')}</div>
                                     <div className="grid grid-cols-3 gap-2 text-xs bg-gray-50 p-3 rounded-lg">
-                                        <div><span className="text-[9px] block text-gray-400">TOP</span> {quickViewProduct.pyramid.top}</div>
-                                        <div><span className="text-[9px] block text-gray-400">HEART</span> {quickViewProduct.pyramid.heart}</div>
-                                        <div><span className="text-[9px] block text-gray-400">BASE</span> {quickViewProduct.pyramid.base}</div>
+                                        <div><span className="text-[9px] block text-gray-400">{t('pyramidTop')}</span> {quickViewProduct.pyramid.top}</div>
+                                        <div><span className="text-[9px] block text-gray-400">{t('pyramidHeart')}</span> {quickViewProduct.pyramid.heart}</div>
+                                        <div><span className="text-[9px] block text-gray-400">{t('pyramidBase')}</span> {quickViewProduct.pyramid.base}</div>
                                     </div>
                                 </div>
                             </div>
@@ -268,14 +270,14 @@ const ProductSection = ({ addToCart, isStandaloneShop = false }) => {
                                     }}
                                     className="flex-1 bg-charcoal text-white hover:bg-gold hover:text-charcoal py-4 font-bold uppercase tracking-widest text-xs rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
                                 >
-                                    <ShoppingBag size={16} /> Add to Sanctuary — {quickViewProduct.price}
+                                    <ShoppingBag size={16} /> {t('addToSanctuary')} — {quickViewProduct.price}
                                 </button>
                                 <Link
                                     to={`/product/${quickViewProduct.id}`}
                                     onClick={() => setQuickViewProduct(null)}
                                     className="bg-gray-100 text-charcoal hover:bg-gray-200 py-4 px-6 font-bold uppercase tracking-widest text-xs rounded-lg transition-colors text-center"
                                 >
-                                    Full Details
+                                    {t('fullDetails')}
                                 </Link>
                             </div>
                         </div>

@@ -39,10 +39,11 @@ const TopBar = () => {
 
     return (
         <div className="bg-charcoal text-ivory text-[10px] font-bold tracking-[0.2em] text-center py-2 uppercase border-b border-white/10 flex items-center justify-between px-4 md:px-8">
-            <div className="flex-1 text-center md:text-left flex items-center justify-center md:justify-start gap-4">
-                <span>{t('topBar')}</span>
-                <span className="hidden md:inline">•</span>
-                <span className="hidden md:inline text-gold">{t('freeShipping')}</span>
+                {/* Spacer to balance the language selector */}
+            <div className="shrink-0 invisible px-2.5 py-1 text-[9px]" aria-hidden="true">EN | हिंदी</div>
+
+            <div className="flex-1 flex items-center justify-center">
+                <span className="moving-text">{t('topBar')}</span>
             </div>
 
             {/* i18n Language Selector */}
@@ -197,7 +198,6 @@ function AppContent() {
                         <Route path="/contact" element={<Contact />} />
                         <Route path="/checkout" element={<Checkout cartItems={cartItems} onClearCart={clearCart} />} />
                         <Route path="/success" element={<PaymentSuccess />} />
-                        <Route path="/admin" element={<Admin />} />
                         <Route path="/return-policy" element={<ReturnPolicy />} />
                         <Route path="/product/:id" element={<ProductDetails addToCart={addToCart} />} />
                         <Route path="*" element={<NotFound />} />
@@ -230,10 +230,37 @@ function AppContent() {
     );
 }
 
+function AdminApp() {
+    return (
+        <LenisScroll>
+            <PageTracker />
+            <div className="min-h-screen bg-gray-50 pt-28 pb-16 px-4 md:px-8">
+                <Admin />
+            </div>
+        </LenisScroll>
+    );
+}
+
 function App() {
     return (
         <Router>
-            <AppContent />
+            <Routes>
+                {/* Admin route - standalone layout */}
+                <Route path="/admin" element={<AdminApp />} />
+
+                {/* All other routes - full layout */}
+                <Route element={<AppContent />}>
+                    <Route index element={<Home />} />
+                    <Route path="shop" element={<ProductSection />} />
+                    <Route path="blog" element={<Blog />} />
+                    <Route path="contact" element={<Contact />} />
+                    <Route path="checkout" element={<Checkout />} />
+                    <Route path="success" element={<PaymentSuccess />} />
+                    <Route path="return-policy" element={<ReturnPolicy />} />
+                    <Route path="product/:id" element={<ProductDetails />} />
+                    <Route path="*" element={<NotFound />} />
+                </Route>
+            </Routes>
         </Router>
     );
 }

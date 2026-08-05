@@ -1,38 +1,23 @@
 import React from 'react';
 import { Leaf, Award, Feather, Droplets } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const TrustBar = () => {
+    const { t } = useTranslation();
+
     const features = [
-        {
-            icon: <Leaf strokeWidth={1.5} />,
-            title: "100% Natural",
-            desc: "Plant-based ingredients"
-        },
-        {
-            icon: <Award strokeWidth={1.5} />,
-            title: "Temple Grade",
-            desc: "Hand-rolled clarity"
-        },
-        {
-            icon: <Feather strokeWidth={1.5} />,
-            title: "Ethically Sourced",
-            desc: "Fair trade practices"
-        },
-        {
-            icon: <Droplets strokeWidth={1.5} />,
-            title: "Essential Oils",
-            desc: "Therapeutic purity"
-        }
+        { icon: <Leaf strokeWidth={1.5} />, titleKey: 'trust1Title', descKey: 'trust1Desc' },
+        { icon: <Award strokeWidth={1.5} />, titleKey: 'trust2Title', descKey: 'trust2Desc' },
+        { icon: <Feather strokeWidth={1.5} />, titleKey: 'trust3Title', descKey: 'trust3Desc' },
+        { icon: <Droplets strokeWidth={1.5} />, titleKey: 'trust4Title', descKey: 'trust4Desc' },
     ];
 
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            transition: {
-                staggerChildren: 0.3
-            }
+            transition: { staggerChildren: 0.3 }
         }
     };
 
@@ -67,8 +52,8 @@ const TrustBar = () => {
                             <div className="mb-6 text-gold p-5 rounded-full border border-charcoal/10 bg-gray-50 group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-all duration-500 shadow-sm group-hover:shadow-lg">
                                 {React.cloneElement(feature.icon, { size: 28 })}
                             </div>
-                            <h3 className="font-heading text-lg mb-2 text-charcoal font-semibold tracking-wide">{feature.title}</h3>
-                            <p className="font-body text-xs text-gray-500 uppercase tracking-widest group-hover:text-gold transition-colors">{feature.desc}</p>
+                            <h3 className="font-heading text-lg mb-2 text-charcoal font-semibold tracking-wide">{t(feature.titleKey)}</h3>
+                            <p className="font-body text-xs text-gray-500 uppercase tracking-widest group-hover:text-gold transition-colors">{t(feature.descKey)}</p>
                         </motion.div>
                     ))}
                 </motion.div>

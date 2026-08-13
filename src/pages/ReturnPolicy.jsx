@@ -1,15 +1,75 @@
 import React from 'react';
 import { ShieldCheck, RefreshCw, Truck, HeartHandshake, AlertCircle, Mail, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/SEO';
+import SEO, { breadcrumbSchema, faqSchema } from '../components/SEO';
+
+const returnPolicySchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Return & Refund Policy | Ayodhya Agarbatti",
+    "description": "Ayodhya Agarbatti's 7-Day hassle-free Return, Replacement, and Refund policy for natural charcoal-free incense sticks hand-rolled in Ayodhya.",
+    "url": "https://www.ayodhyaagarbatti.in/return-policy",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Ayodhya Agarbatti",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.ayodhyaagarbatti.in/images/ayodhya_logo.png"
+        }
+    },
+    "mainEntity": {
+        "@type": "Service",
+        "name": "Return & Replacement Service",
+        "description": "7-day replacement for damaged, defective, or incorrect incense products. Free reverse pickup across India.",
+        "provider": {
+            "@type": "Organization",
+            "name": "Ayodhya Agarbatti"
+        },
+        "areaServed": "India",
+        "termsOfService": "https://www.ayodhyaagarbatti.in/return-policy"
+    }
+};
+
+const breadcrumbs = [
+    { name: 'Home', url: 'https://www.ayodhyaagarbatti.in/' },
+    { name: 'Return Policy', url: 'https://www.ayodhyaagarbatti.in/return-policy' }
+];
+
+const returnFaqs = [
+    {
+        question: "What is Ayodhya Agarbatti's return policy?",
+        answer: "We offer a 7-day replacement policy for incense products that arrive damaged, defective, or incorrect. We arrange free reverse pickup at no extra charge. Due to the consumable nature of incense, opened or burnt packs cannot be returned unless proven defective upon arrival."
+    },
+    {
+        question: "How do I request a return or replacement?",
+        answer: "Contact our support team at support@ayodhyaagarbatti.com or WhatsApp +91 98765 43210 with your Order Number (e.g., AYD-123456) and a photo/video showing the issue. We verify within 24 hours and dispatch a fresh replacement at zero additional shipping cost."
+    },
+    {
+        question: "How long does a refund take to process?",
+        answer: "For prepaid orders (Razorpay/UPI/Card), refunds are credited to your original payment method within 5-7 business days. For Cash on Delivery orders, refunds are transferred to your bank account via UPI/NEFT within 48 hours of verification."
+    },
+    {
+        question: "Do I need to return free gifts (like brass holders) with the product?",
+        answer: "Yes, free promotional gifts included in bundle packages (such as brass incense holders) must be returned alongside the original main product for a valid replacement or refund."
+    },
+    {
+        question: "What if my incense sticks arrive broken or damaged?",
+        answer: "This is covered under our 7-day replacement policy. Simply share a photo/video of the damaged items with your order number, and we'll dispatch a fresh replacement at no cost to you."
+    }
+];
 
 const ReturnPolicy = () => {
     return (
         <div className="pt-32 pb-24 bg-ivory text-charcoal min-h-screen">
             <SEO
-                title="Return & Refund Policy | Ayodhya Agarbatti"
-                description="Read Ayodhya Agarbatti's 7-Day hassle-free Return, Replacement, and Refund policy for natural charcoal-free incense sticks."
+                title="Return & Refund Policy | Ayodhya Agarbatti - 7 Day Hassle-Free Replacement"
+                description="Read Ayodhya Agarbatti's 7-Day hassle-free Return, Replacement, and Refund policy for natural charcoal-free incense sticks. Free reverse pickup across India. Prepaid refunds in 5-7 days, COD refunds in 48 hours."
+                keywords="Ayodhya Agarbatti return policy, agarbatti refund policy, incense replacement policy, 7 day return incense, free pickup return India, COD refund incense"
                 canonical="https://www.ayodhyaagarbatti.in/return-policy"
+                ogImage="https://www.ayodhyaagarbatti.in/images/ayodhya_package.png"
+                schema={returnPolicySchema}
+                breadcrumbs={breadcrumbs}
+                faqs={returnFaqs}
             />
 
             <div className="max-w-4xl mx-auto px-6">

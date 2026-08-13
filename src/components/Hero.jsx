@@ -26,7 +26,7 @@ const Hero = () => {
             </motion.div>
 
             {/* Content Overlay */}
-            <div className="relative z-10 text-center px-6 max-w-5xl mx-auto mt-10">
+            <div className="relative z-10 text-center px-6 max-w-5xl mx-auto pt-32 sm:pt-36 md:pt-40 pb-12">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

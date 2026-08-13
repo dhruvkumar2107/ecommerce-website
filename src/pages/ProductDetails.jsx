@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
-import SEO from '../components/SEO';
+import SEO, { breadcrumbSchema, faqSchema } from '../components/SEO';
 import { products } from '../data/products';
 
 const ProductDetails = ({ addToCart }) => {
@@ -45,6 +45,7 @@ const ProductDetails = ({ addToCart }) => {
 
     const currentPrice = product.packOptions?.[selectedPack]?.price || product.numericPrice;
     const totalPrice = currentPrice * quantity;
+    const canonicalUrl = `https://www.ayodhyaagarbatti.in/product/${product.id}`;
 
     const handleAddToCart = () => {
         const itemToAdd = {
@@ -85,40 +86,194 @@ const ProductDetails = ({ addToCart }) => {
         }
     };
 
+    const breadcrumbs = [
+        { name: 'Home', url: 'https://www.ayodhyaagarbatti.in/' },
+        { name: 'Shop', url: 'https://www.ayodhyaagarbatti.in/shop' },
+        { name: product.category, url: `https://www.ayodhyaagarbatti.in/shop?category=${encodeURIComponent(product.category)}` },
+        { name: product.name, url: canonicalUrl }
+    ];
+
+    const productFaqs = product.faqs?.map(faq => ({
+        question: faq.question,
+        answer: faq.answer
+    })) || [];
+
+    const generalFaqs = [
+        {
+            question: "Are Ayodhya Agarbatti incense sticks charcoal-free?",
+            answer: "Yes, all Ayodhya Agarbatti incense sticks are 100% charcoal-free. We use natural plant resins, sacred temple flower powder, and pure essential oils as binders instead of charcoal, ensuring a clean, non-toxic burn without black soot."
+        },
+        {
+            question: "How long does each incense stick burn?",
+            answer: "Each hand-rolled incense stick burns for approximately 45-50 minutes, providing long-lasting fragrance for your rituals, meditation, or daily use."
+        },
+        {
+            question: "What ingredients are used in Ayodhya Agarbatti?",
+            answer: "Our incense sticks contain 100% natural ingredients: sacred Ayodhya temple flower powder, pure Mysore sandalwood powder, natural tree gum (Jigzat resin), bamboo-free natural base, and therapeutic essential oils. Zero synthetic chemicals, phthalates, or charcoal."
+        },
+        {
+            question: "Do you ship across India?",
+            answer: "Yes, we offer fast express shipping across India. Free shipping on orders above ₹999. We also offer Cash on Delivery (COD) for most pin codes."
+        },
+        {
+            question: "Can I return or exchange incense sticks?",
+            answer: "We offer a 7-day replacement policy for damaged, defective, or incorrect items. Due to the consumable nature of incense, opened/burnt packs cannot be returned unless proven defective upon arrival. See our Return Policy page for full details."
+        }
+    ];
+
+    const allFaqs = [...productFaqs, ...generalFaqs];
+
     const productSchema = {
         "@context": "https://schema.org/",
         "@type": "Product",
         "name": product.name,
+        "alternateName": product.variant,
         "image": product.images?.map(img => `https://www.ayodhyaagarbatti.in${img}`),
         "description": product.shortDesc,
+        "sku": `AYD-${product.id.toString().padStart(3, '0')}`,
         "brand": {
             "@type": "Brand",
-            "name": "Ayodhya Agarbatti"
+            "name": "Ayodhya Agarbatti",
+            "logo": "https://www.ayodhyaagarbatti.in/images/ayodhya_logo.png"
         },
-        "offers": {
+        "manufacturer": {
+            "@type": "Organization",
+            "name": "Ayodhya Agarbatti",
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Ayodhya",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "IN"
+            }
+        },
+        "category": "Incense Sticks",
+        "material": "Natural temple flowers, sandalwood, essential oils, plant resins",
+        "color": "Natural",
+        "offers": product.packOptions?.map(pack => ({
             "@type": "Offer",
-            "url": `https://www.ayodhyaagarbatti.in/product/${product.id}`,
+            "url": canonicalUrl,
             "priceCurrency": "INR",
-            "price": "299",
+            "price": pack.price.toString(),
             "availability": "https://schema.org/InStock",
-            "itemCondition": "https://schema.org/NewCondition"
-        },
+            "itemCondition": "https://schema.org/NewCondition",
+            "name": pack.size,
+            "description": pack.tag || '',
+            "seller": {
+                "@type": "Organization",
+                "name": "Ayodhya Agarbatti"
+            },
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": "0",
+                    "currency": "INR"
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "IN"
+                },
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 1,
+                        "maxValue": 2,
+                        "unitCode": "DAY"
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 2,
+                        "maxValue": 5,
+                        "unitCode": "DAY"
+                    }
+                }
+            },
+            "priceValidUntil": "2026-12-31"
+        })) || [{
+            "@type": "Offer",
+            "url": canonicalUrl,
+            "priceCurrency": "INR",
+            "price": product.numericPrice.toString(),
+            "availability": "https://schema.org/InStock",
+            "itemCondition": "https://schema.org/NewCondition",
+            "seller": {
+                "@type": "Organization",
+                "name": "Ayodhya Agarbatti"
+            }
+        }],
         "aggregateRating": {
             "@type": "AggregateRating",
             "ratingValue": product.rating || 4.9,
-            "reviewCount": product.reviewCount || 164
-        }
+            "reviewCount": userReviews.length || product.reviewCount || 164,
+            "bestRating": "5",
+            "worstRating": "1"
+        },
+        "review": userReviews.slice(0, 5).map(review => ({
+            "@type": "Review",
+            "author": {
+                "@type": "Person",
+                "name": review.name
+            },
+            "datePublished": review.date ? new Date(review.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            "reviewBody": review.comment,
+            "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": review.rating,
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "publisher": {
+                "@type": "Organization",
+                "name": "Ayodhya Agarbatti"
+            }
+        })),
+        "additionalProperty": [
+            {
+                "@type": "PropertyValue",
+                "name": "Burn Time",
+                "value": product.burnTime
+            },
+            {
+                "@type": "PropertyValue",
+                "name": "Stick Count",
+                "value": product.stickCount
+            },
+            {
+                "@type": "PropertyValue",
+                "name": "Scent Strength",
+                "value": `${product.scentStrength}/5`
+            },
+            {
+                "@type": "PropertyValue",
+                "name": "Charcoal Free",
+                "value": "Yes"
+            },
+            {
+                "@type": "PropertyValue",
+                "name": "Hand Rolled",
+                "value": "Yes"
+            },
+            {
+                "@type": "PropertyValue",
+                "name": "Origin",
+                "value": "Ayodhya, Uttar Pradesh, India"
+            }
+        ]
     };
 
     return (
         <div className="bg-ivory text-charcoal min-h-screen pt-32 pb-24 relative">
             <SEO
-                title={`${product.name} | Ayodhya Agarbatti (₹299)`}
+                title={`${product.name} | Ayodhya Agarbatti (₹${product.numericPrice})`}
                 description={product.shortDesc}
-                keywords={`${product.name}, ${product.variant}, Ayodhya Agarbatti, natural incense sticks, charcoal free agarbatti, buy online India`}
-                canonical={`https://www.ayodhyaagarbatti.in/product/${product.id}`}
+                keywords={`${product.name}, ${product.variant}, ${product.category}, Ayodhya Agarbatti, natural incense sticks, charcoal free agarbatti, temple flower incense, buy agarbatti online India, Mysore sandalwood incense`}
+                canonical={canonicalUrl}
                 ogImage={product.images?.[0] ? `https://www.ayodhyaagarbatti.in${product.images[0]}` : undefined}
+                ogType="product"
                 schema={productSchema}
+                breadcrumbs={breadcrumbs}
+                faqs={allFaqs}
             />
             {/* Added Toast - Mobile Centered Bottom */}
             <AnimatePresence>

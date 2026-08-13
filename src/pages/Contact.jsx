@@ -2,6 +2,63 @@ import React, { useState } from 'react';
 import { Mail, MapPin, Phone, CheckCircle, Send, Loader2, Instagram, Facebook, Linkedin, Youtube } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import SEO from '../components/SEO';
+
+const contactSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact Ayodhya Agarbatti",
+    "description": "Get in touch with Ayodhya Agarbatti for orders, wholesale inquiries, or support. Based in the holy city of Ayodhya, Uttar Pradesh.",
+    "url": "https://www.ayodhyaagarbatti.in/contact",
+    "mainEntity": {
+        "@type": "Organization",
+        "name": "Ayodhya Agarbatti",
+        "alternateName": "अयोध्या अगरबत्ती",
+        "url": "https://www.ayodhyaagarbatti.in",
+        "logo": "https://www.ayodhyaagarbatti.in/images/ayodhya_logo.png",
+        "contactPoint": [
+            {
+                "@type": "ContactPoint",
+                "telephone": "+91-98765-43210",
+                "contactType": "customer service",
+                "availableLanguage": ["English", "Hindi"],
+                "hoursAvailable": {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                    "opens": "09:00",
+                    "closes": "18:00",
+                    "timeZone": "Asia/Kolkata"
+                }
+            },
+            {
+                "@type": "ContactPoint",
+                "telephone": "+91-98765-43210",
+                "contactType": "wholesale",
+                "availableLanguage": ["English", "Hindi"]
+            }
+        ],
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "123 Temple Road",
+            "addressLocality": "Ayodhya",
+            "addressRegion": "Uttar Pradesh",
+            "postalCode": "224001",
+            "addressCountry": "IN"
+        },
+        "email": "namaste@ayodhyaagarbatti.com",
+        "sameAs": [
+            "https://www.instagram.com/ayodhyaagarbatti/",
+            "https://www.facebook.com/ayodhyaagarbatti",
+            "https://www.linkedin.com/in/ayodhya-agarbatti-122b22418/",
+            "https://www.youtube.com/@ayodhyaagarbatti"
+        ]
+    }
+};
+
+const breadcrumbs = [
+    { name: 'Home', url: 'https://www.ayodhyaagarbatti.in/' },
+    { name: 'Contact', url: 'https://www.ayodhyaagarbatti.in/contact' }
+];
 
 const Contact = () => {
     const [formData, setFormData] = useState({
@@ -57,6 +114,15 @@ const Contact = () => {
 
     return (
         <div className="pt-24 pb-20 bg-white min-h-screen">
+            <SEO
+                title="Contact Us | Ayodhya Agarbatti - Get in Touch for Orders & Support"
+                description="Contact Ayodhya Agarbatti for orders, wholesale inquiries, or support. Based in the holy city of Ayodhya, Uttar Pradesh. Call +91 98765 43210 or email namaste@ayodhyaagarbatti.com. Mon-Sat, 9am-6pm IST."
+                keywords="contact Ayodhya Agarbatti, agarbatti customer support, wholesale incense inquiry, Ayodhya incense contact, buy incense support India"
+                canonical="https://www.ayodhyaagarbatti.in/contact"
+                ogImage="https://www.ayodhyaagarbatti.in/images/ayodhya_logo.png"
+                schema={contactSchema}
+                breadcrumbs={breadcrumbs}
+            />
             <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20">
 
                 {/* Contact Info */}

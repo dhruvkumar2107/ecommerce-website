@@ -5,6 +5,39 @@ import { ShoppingBag, MapPin, Lock, CreditCard, Banknote, CheckCircle, ShieldChe
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { logCheckoutStep } from '../utils/analyticsLogger';
+import SEO from '../components/SEO';
+
+const checkoutSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Secure Checkout | Ayodhya Agarbatti",
+    "description": "Complete your secure purchase of premium charcoal-free incense sticks from Ayodhya Agarbatti. Multiple payment options including Razorpay and Cash on Delivery.",
+    "url": "https://www.ayodhyaagarbatti.in/checkout",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Ayodhya Agarbatti",
+        "logo": "https://www.ayodhyaagarbatti.in/images/ayodhya_logo.png"
+    },
+    "mainEntity": {
+        "@type": "Order",
+        "description": "Purchase Ayodhya Agarbatti sacred incense sticks with secure checkout",
+        "merchant": {
+            "@type": "Organization",
+            "name": "Ayodhya Agarbatti"
+        },
+        "acceptedPaymentMethod": [
+            "https://schema.org/CreditCard",
+            "https://schema.org/PaymentCard",
+            "Cash"
+        ]
+    }
+};
+
+const breadcrumbs = [
+    { name: 'Home', url: 'https://www.ayodhyaagarbatti.in/' },
+    { name: 'Shop', url: 'https://www.ayodhyaagarbatti.in/shop' },
+    { name: 'Checkout', url: 'https://www.ayodhyaagarbatti.in/checkout' }
+];
 
 const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -258,6 +291,18 @@ const Checkout = ({ cartItems = [], onClearCart }) => {
 
     return (
         <div className="min-h-screen bg-ivory/50 pt-28 pb-12">
+            <SEO
+                title="Secure Checkout | Ayodhya Agarbatti - Complete Your Order"
+                description="Complete your secure purchase of premium charcoal-free incense sticks from Ayodhya Agarbatti. Multiple payment options including Razorpay (UPI, Cards, Netbanking) and Cash on Delivery. Free shipping on orders above ₹999."
+                keywords="checkout Ayodhya Agarbatti, secure payment incense, buy agarbatti online payment, razorpay checkout, cash on delivery incense, order sacred fragrances"
+                canonical="https://www.ayodhyaagarbatti.in/checkout"
+                ogImage="https://www.ayodhyaagarbatti.in/images/ayodhya_package.png"
+                ogType="website"
+                schema={checkoutSchema}
+                breadcrumbs={breadcrumbs}
+                ogTitle="Secure Checkout | Ayodhya Agarbatti"
+                ogDescription="Complete your order of hand-rolled sacred incense from Ayodhya. Secure payment with Razorpay or COD."
+            />
             <div className="max-w-6xl mx-auto px-6">
                 <Steps currentStep={step} />
 
